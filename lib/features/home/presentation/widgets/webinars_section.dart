@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -28,7 +29,8 @@ class WebinarsSection extends StatelessWidget {
       children: [
         const SectionHeader(eyebrow: 'THIS WEEK', title: 'Upcoming Webinars'),
         SizedBox(
-          height: 232,
+          // Tight — card content is ~220 px + ~12 px Android safety.
+          height: R<double>(normal: 232, small: 232, tabletP: 244).resolve(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
@@ -56,23 +58,26 @@ class _WebinarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 260,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.rLg,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: AppRadius.rLg,
-              boxShadow: AppRadius.cardShadow,
-              border: Border.all(color: AppColors.outlineSoft, width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: R<double>(normal: 260, tabletP: 290).resolve(context),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: AppRadius.rLg,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: AppRadius.rLg,
+                boxShadow: AppRadius.cardShadow,
+                border: Border.all(color: AppColors.outlineSoft, width: 1),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 // Cover
                 ClipRRect(
                   borderRadius: const BorderRadius.only(
@@ -187,6 +192,7 @@ class _WebinarCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

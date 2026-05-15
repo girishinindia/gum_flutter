@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -28,7 +29,9 @@ class BundlesSection extends StatelessWidget {
       children: [
         const SectionHeader(eyebrow: 'BEST VALUE', title: 'Course Bundles'),
         SizedBox(
-          height: 188,
+          // Bundle card uses Spacer internally → fills its allocated
+          // height by design. Keep slightly generous.
+          height: R<double>(normal: 188, small: 188, tabletP: 200).resolve(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),

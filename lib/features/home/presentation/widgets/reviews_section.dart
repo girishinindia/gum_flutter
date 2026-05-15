@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -26,7 +27,8 @@ class ReviewsSection extends StatelessWidget {
       children: [
         const SectionHeader(eyebrow: 'LOVED BY LEARNERS', title: 'Student Reviews'),
         SizedBox(
-          height: 220,
+          // Tight — card content is ~175 px + ~15 px Android safety.
+          height: R<double>(normal: 190, small: 190, tabletP: 200).resolve(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
@@ -54,23 +56,27 @@ class _ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 286,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.rLg,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: AppRadius.rLg,
-              boxShadow: AppRadius.cardShadow,
-              border: Border.all(color: AppColors.outlineSoft, width: 1),
-            ),
-            child: Stack(
-              children: [
+    // Align(topCenter) + mainAxisSize.min on the Column = card sizes
+    // to its content height; no stretching to fill the carousel.
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: R<double>(normal: 286, tabletP: 320).resolve(context),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: AppRadius.rLg,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: AppRadius.rLg,
+                boxShadow: AppRadius.cardShadow,
+                border: Border.all(color: AppColors.outlineSoft, width: 1),
+              ),
+              child: Stack(
+                children: [
                 // Watermark quote glyph
                 Positioned(
                   top: -8, right: -4,
@@ -85,6 +91,7 @@ class _ReviewCard extends StatelessWidget {
                   ),
                 ),
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Stars
@@ -102,17 +109,17 @@ class _ReviewCard extends StatelessWidget {
                       }),
                     ),
                     const SizedBox(height: 8),
-                    // Body
-                    Expanded(
-                      child: Text(
-                        review.comment,
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.body.copyWith(
-                          fontSize: 12.5,
-                          height: 1.45,
-                          color: AppColors.slate700,
-                        ),
+                    // Body — plain Text (was Expanded). maxLines:4 +
+                    // ellipsis already caps the size; intrinsic height
+                    // is what we want so the card hugs the content.
+                    Text(
+                      review.comment,
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.body.copyWith(
+                        fontSize: 12.5,
+                        height: 1.45,
+                        color: AppColors.slate700,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -175,6 +182,7 @@ class _ReviewCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

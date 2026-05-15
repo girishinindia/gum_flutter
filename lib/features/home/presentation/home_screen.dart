@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/curved_bottom_nav.dart';
+import '../../../shared/widgets/page_constraint.dart';
 import '../data/home_repository.dart';
 import 'widgets/bundles_section.dart';
 import 'widgets/categories_grid.dart';
@@ -85,7 +86,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: Stack(
           children: [
-            // Page background — subtle vertical tint sandwich.
+            // Page background — subtle vertical tint sandwich (paints
+            // edge-to-edge, even when the foreground is width-clamped
+            // by PageConstraint on tablets).
             const Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
@@ -93,9 +96,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
+            // PageConstraint = no-op on phones; clamps max width to
+            // 720 (tablet-portrait) / 960 (tablet-landscape) so the
+            // home doesn't stretch awkwardly on iPad.
+            PageConstraint(
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
                 // 1️⃣  Sticky white brand app bar
                 BrandSliverAppBar(onMenuTap: _openDrawer),
 
@@ -171,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // the last visible review card from being clipped).
                 const SliverToBoxAdapter(child: SizedBox(height: 20)),
               ],
+              ),
             ),
           ],
         ),

@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -62,7 +63,9 @@ class OffersCarousel extends StatelessWidget {
 
         // ── Carousel ────────────────────────────────────────────────
         SizedBox(
-          height: 318,
+          // Tight — cards are now intrinsic-sized via Align+min Column.
+          // 300 = ~290 px content + ~10 px Android font safety.
+          height: R<double>(normal: 300, small: 300, tabletP: 310).resolve(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
@@ -101,26 +104,34 @@ class _CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 274,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.rLg,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: AppRadius.rLg,
-              boxShadow: AppRadius.cardShadow,
-              border: Border.all(color: AppColors.outlineSoft, width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Cover(course: course),
-                _Body(course: course),
-              ],
+    // Align(topCenter) prevents the horizontal-ListView's tight height
+    // constraint from stretching the card. Combined with
+    // mainAxisSize.min on the Column below, the card sizes to its
+    // content height — no more empty white space below "Resume · 78%".
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: R<double>(normal: 274, tabletP: 300).resolve(context),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: AppRadius.rLg,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: AppRadius.rLg,
+                boxShadow: AppRadius.cardShadow,
+                border: Border.all(color: AppColors.outlineSoft, width: 1),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Cover(course: course),
+                  _Body(course: course),
+                ],
+              ),
             ),
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -26,7 +27,14 @@ class InstructorsSection extends StatelessWidget {
       children: [
         const SectionHeader(eyebrow: 'LEARN FROM THE BEST', title: 'Top Instructors'),
         SizedBox(
-          height: 196,
+          // Tight — card content is ~180 px + ~15 px Android safety.
+          // (Was 196 originally, overflowed by 6 px on Android. Now
+          // 195 is safe because the card is intrinsic-sized via
+          // Align+min Column — no more stretching.)
+          height: R<double>(
+            normal:  195,
+            tabletP: 210,
+          ).resolve(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
@@ -54,24 +62,27 @@ class _InstructorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 174,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.rLg,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: AppRadius.rLg,
-              boxShadow: AppRadius.cardShadow,
-              border: Border.all(color: AppColors.outlineSoft, width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: R<double>(normal: 174, tabletP: 190).resolve(context),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: AppRadius.rLg,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: AppRadius.rLg,
+                boxShadow: AppRadius.cardShadow,
+                border: Border.all(color: AppColors.outlineSoft, width: 1),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                 _Avatar(initial: instructor.initial, gradient: instructor.avatarGradient),
                 const SizedBox(height: 10),
                 Row(
@@ -151,6 +162,7 @@ class _InstructorCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

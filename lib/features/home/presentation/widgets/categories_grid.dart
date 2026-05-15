@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -83,12 +84,22 @@ class CategoriesGrid extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: items.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
+              // Responsive grid delegate:
+              //   • 4 cols on phones, 6 on tablet-portrait, 8 on tablet-landscape
+              //   • tile height bumps from 96 → 110 on tablets so the
+              //     larger tile width doesn't make them look squat
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: R<int>(
+                  normal:  4,
+                  tabletP: 6,
+                  tabletL: 8,
+                ).resolve(context),
                 mainAxisSpacing:  AppSpacing.tileGap,
                 crossAxisSpacing: AppSpacing.tileGap,
-                // 96 = ~92 px content + 2 top + 2 bottom buffer.
-                mainAxisExtent: 96,
+                mainAxisExtent: R<double>(
+                  normal:  96,
+                  tabletP: 110,
+                ).resolve(context),
               ),
               itemBuilder: (context, i) {
                 final item = items[i];
