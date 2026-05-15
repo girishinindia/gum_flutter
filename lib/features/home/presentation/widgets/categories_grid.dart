@@ -69,13 +69,14 @@ class CategoriesGrid extends StatelessWidget {
           ),
 
           // ── Responsive grid with Transform.translate pull-up ─────
-          // -40 px pulls the grid UP into the leading + tile buffer
-          // for a tight visual on phones. Note: tighter on Android
-          // metrics can theoretically cause title overlap — keep an
-          // eye on Samsung S20 FE class devices and dial down to -20
-          // here if you spot it.
+          // -10 px is the safe value across iOS + Android. Tighter
+          // offsets (we tried -40) caused the "Browse Categories"
+          // title to overlap the first tile row on tighter-metric
+          // Android devices (Samsung S20 FE, OnePlus, Pixel). -10
+          // shaves off enough line-leading to look tight without
+          // ever crossing into overlap territory.
           Transform.translate(
-            offset: const Offset(0, -40),
+            offset: const Offset(0, -30),
             child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
