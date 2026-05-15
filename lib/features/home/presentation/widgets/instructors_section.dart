@@ -25,29 +25,26 @@ class InstructorsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(eyebrow: 'LEARN FROM THE BEST', title: 'Top Instructors'),
-        SizedBox(
-          // Tight — card content is ~180 px + ~15 px Android safety.
-          // (Was 196 originally, overflowed by 6 px on Android. Now
-          // 195 is safe because the card is intrinsic-sized via
-          // Align+min Column — no more stretching.)
-          height: R<double>(
-            normal:  195,
-            tabletP: 210,
-          ).resolve(context),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.cardGap),
-            itemBuilder: (context, i) {
-              return _InstructorCard(
-                instructor: items[i],
-                onTap: () => HapticFeedback.selectionClick(),
-              ).animate(delay: (60 * i).ms).fadeIn(duration: 380.ms).slideX(
-                    begin: 0.08, end: 0, curve: Curves.easeOutCubic,
-                  );
-            },
+        SectionHeader(eyebrow: 'LEARN FROM THE BEST', title: 'Top Instructors'),
+        // Auto-sizing carousel — fixes the 6 px Android overflow.
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < items.length; i++) ...[
+                  if (i > 0) const SizedBox(width: AppSpacing.cardGap),
+                  _InstructorCard(
+                    instructor: items[i],
+                    onTap: () => HapticFeedback.selectionClick(),
+                  ).animate(delay: (60 * i).ms).fadeIn(duration: 380.ms).slideX(
+                        begin: 0.08, end: 0, curve: Curves.easeOutCubic,
+                      ),
+                ],
+              ],
+            ),
           ),
         ),
       ],

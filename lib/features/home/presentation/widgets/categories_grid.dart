@@ -33,11 +33,11 @@ class CategoriesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      // Categories sits directly under the aurora hero — uses the
-      // TIGHT spacing tokens so it nestles against the gradient
-      // instead of leaving a big dead band.
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.pageGutter, 20,
+      // Top = responsive sectionTightFor (10 / 16 / 20 per breakpoint).
+      // Categories sits directly under the aurora hero — tighter than
+      // a normal section because the gradient already separates them.
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.pageGutter, AppSpacing.sectionTightFor(context),
         AppSpacing.pageGutter, 0,
       ),
       child: Column(
@@ -68,26 +68,18 @@ class CategoriesGrid extends StatelessWidget {
             ),
           ),
 
-          // ── 4-col grid ────────────────────────────────────────────
-          // Both axes use AppSpacing.tileGap (12) for visual uniformity
-          // with the carousel `cardGap` standard.
-          //
-          // Transform.translate physically pulls the grid UP by 16 px
-          // to close the residual gap left by the h2 line-leading
-          // (~5 px) + tile-centering buffer (~2 px) + whatever the
-          // .animate() stagger leaves behind. Layout slot is preserved;
-          // only pixels move, so nothing else on the page shifts.
-          // Tweak the offset if visually too tight/loose.
+          // ── Responsive grid with Transform.translate pull-up ─────
+          // -40 px pulls the grid UP into the leading + tile buffer
+          // for a tight visual on phones. Note: tighter on Android
+          // metrics can theoretically cause title overlap — keep an
+          // eye on Samsung S20 FE class devices and dial down to -20
+          // here if you spot it.
           Transform.translate(
             offset: const Offset(0, -40),
             child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: items.length,
-              // Responsive grid delegate:
-              //   • 4 cols on phones, 6 on tablet-portrait, 8 on tablet-landscape
-              //   • tile height bumps from 96 → 110 on tablets so the
-              //     larger tile width doesn't make them look squat
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: R<int>(
                   normal:  4,

@@ -11,31 +11,36 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 
 class SectionHeader extends StatelessWidget {
-  // Const constructor — every callsite can keep using `const
-  // SectionHeader(...)`. All defaults are compile-time constants
-  // pulled from AppSpacing.
+  // Non-const so the default padding can be responsive per context.
+  // Callsites use `SectionHeader(...)` (no const). Override `padding`
+  // explicitly for any non-standard layout.
   const SectionHeader({
     super.key,
     required this.eyebrow,
     required this.title,
     this.onSeeAll,
-    this.padding = const EdgeInsets.fromLTRB(
-      AppSpacing.sectionHeaderGutter,  // 20
-      AppSpacing.section,              // 30  (inter-section gap)
-      AppSpacing.sectionHeaderGutter,  // 20
-      AppSpacing.headerToContent,      // 20  (header → cards)
-    ),
+    this.padding,
   });
 
   final String        eyebrow;
   final String        title;
   final VoidCallback? onSeeAll;
-  final EdgeInsets    padding;
+  final EdgeInsets?   padding;
 
   @override
   Widget build(BuildContext context) {
+    // Default = responsive: section gap on top, header-to-cards on
+    // bottom. Both scale 16 → 22 → 28 from phone to tablet.
+    final effectivePadding = padding ??
+        EdgeInsets.fromLTRB(
+          AppSpacing.sectionHeaderGutter,
+          AppSpacing.sectionFor(context),
+          AppSpacing.sectionHeaderGutter,
+          AppSpacing.headerToContentFor(context),
+        );
+
     return Padding(
-      padding: padding,
+      padding: effectivePadding,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [

@@ -38,11 +38,12 @@ class OffersCarousel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── Section header ──────────────────────────────────────────
-        // Top = AppSpacing.section (30); Bottom = AppSpacing.headerToContent (20).
+        // Top = responsive sectionFor (16 / 22 / 28 per breakpoint).
+        // Bottom = responsive headerToContentFor (16 / 20).
         Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.pageGutter + 4, AppSpacing.section,
-            AppSpacing.pageGutter + 4, AppSpacing.headerToContent,
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.sectionHeaderGutter, AppSpacing.sectionFor(context),
+            AppSpacing.sectionHeaderGutter, AppSpacing.headerToContentFor(context),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -62,29 +63,31 @@ class OffersCarousel extends StatelessWidget {
         ),
 
         // ── Carousel ────────────────────────────────────────────────
-        SizedBox(
-          // Tight — cards are now intrinsic-sized via Align+min Column.
-          // 300 = ~290 px content + ~10 px Android font safety.
-          height: R<double>(normal: 300, small: 300, tabletP: 310).resolve(context),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
-            itemCount: courses.length,
-            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.cardGap),
-            itemBuilder: (context, i) {
-              final c = courses[i];
-              return _CourseCard(
-                course: c,
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  onCourseTap?.call(c);
-                },
-              ).animate(delay: (80 * i).ms).fadeIn(duration: 420.ms).slideX(
-                    begin: 0.08,
-                    end: 0,
-                    curve: Curves.easeOutCubic,
-                  );
-            },
+        // SingleChildScrollView + IntrinsicHeight + Row auto-sizes
+        // to the tallest card on any device — zero overflow risk.
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < courses.length; i++) ...[
+                  if (i > 0) const SizedBox(width: AppSpacing.cardGap),
+                  _CourseCard(
+                    course: courses[i],
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onCourseTap?.call(courses[i]);
+                    },
+                  ).animate(delay: (80 * i).ms).fadeIn(duration: 420.ms).slideX(
+                        begin: 0.08,
+                        end: 0,
+                        curve: Curves.easeOutCubic,
+                      ),
+                ],
+              ],
+            ),
           ),
         ),
       ],

@@ -27,23 +27,26 @@ class WebinarsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(eyebrow: 'THIS WEEK', title: 'Upcoming Webinars'),
-        SizedBox(
-          // Tight — card content is ~220 px + ~12 px Android safety.
-          height: R<double>(normal: 232, small: 232, tabletP: 244).resolve(context),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.cardGap),
-            itemBuilder: (context, i) {
-              return _WebinarCard(
-                webinar: items[i],
-                onTap: () => HapticFeedback.selectionClick(),
-              ).animate(delay: (60 * i).ms).fadeIn(duration: 380.ms).slideX(
-                    begin: 0.08, end: 0, curve: Curves.easeOutCubic,
-                  );
-            },
+        SectionHeader(eyebrow: 'THIS WEEK', title: 'Upcoming Webinars'),
+        // Auto-sizing carousel — no fixed height.
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageGutter),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < items.length; i++) ...[
+                  if (i > 0) const SizedBox(width: AppSpacing.cardGap),
+                  _WebinarCard(
+                    webinar: items[i],
+                    onTap: () => HapticFeedback.selectionClick(),
+                  ).animate(delay: (60 * i).ms).fadeIn(duration: 380.ms).slideX(
+                        begin: 0.08, end: 0, curve: Curves.easeOutCubic,
+                      ),
+                ],
+              ],
+            ),
           ),
         ),
       ],
