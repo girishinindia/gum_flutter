@@ -1,0 +1,48 @@
+name: growupmore
+description: "Grow Up More — multilingual IT-skilling Flutter app for Android + iOS."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ── Core UI ──────────────────────────────────────────────────────────
+  cupertino_icons: ^1.0.8
+  curved_navigation_bar: ^1.0.6     # kept for the curvy bottom-bar option;
+                                    # the custom BNBCustomePainter still uses
+                                    # the same shape — this dep is here so
+                                    # we can swap in later if needed.
+  flutter_svg: ^2.0.10+1             # GM_Logo_Dark.svg renderer
+
+  # ── Typography — match desktop's `next/font/google` setup ────────────
+  # Sora for headings · Outfit for body. Loaded at runtime; we cap to the
+  # weights actually used to keep binary size small.
+  google_fonts: ^6.2.1
+
+  # ── Premium interaction layer ────────────────────────────────────────
+  # Used for the shimmer-skeleton loading state and the entrance-animation
+  # micro-interactions that make the home screen feel alive.
+  shimmer:         ^3.0.0
+  flutter_animate: ^4.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Asset roots. `assets/` keeps the legacy flat list (already 40+ images
+  # used by the original home screen); `assets/images/` is where the
+  # SVG brand mark and any future SVG/vector art lives so the typed
+  # `core/constants/app_assets.dart` stays predictable.
+  assets:
+    - assets/
+    - assets/images/

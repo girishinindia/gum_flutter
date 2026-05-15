@@ -7,6 +7,47 @@
 .buildlog/
 .history
 
+# ── Enterprise project additions ────────────────────────────────────
+# OS metadata
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Editors / IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.history/
+.fleet/
+
+# Environment / secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.keystore
+google-services.json
+GoogleService-Info.plist
+
+# Flutter Version Management
+.fvm/
+.fvmrc
+
+# Test output
+coverage/
+test/.test_coverage.dart
+test_results/
+
+# Misc
+*.bak
+*.orig
+
 
 
 # Flutter repo-specific
