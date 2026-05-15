@@ -8,9 +8,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_assets.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../features/theming/theme_controller.dart';
 import '../../home/presentation/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -41,14 +43,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Use the active palette's hero gradient — same one the home/drawer
+    // wear, so the splash → home transition is seamless visually.
+    final palette = context.watch<ThemeController>().palette;
     return Scaffold(
       backgroundColor: AppColors.sky900,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Aurora background
-          const DecoratedBox(
-            decoration: BoxDecoration(gradient: AppColors.auroraGradient),
+          // Active theme background
+          DecoratedBox(
+            decoration: BoxDecoration(gradient: palette.heroGradient),
           ),
 
           // Glow orbs for depth (same idea as desktop floating-orbs)
@@ -86,23 +91,33 @@ class _SplashScreenState extends State<SplashScreen> {
                         width: 88, height: 88,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.white.withValues(alpha: 0.35), Colors.white.withValues(alpha: 0.10)],
+                            colors: [
+                              palette.onHero.withValues(alpha: 0.35),
+                              palette.onHero.withValues(alpha: 0.10),
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 1.5),
+                          border: Border.all(
+                            color: palette.onHero.withValues(alpha: 0.4),
+                            width: 1.5,
+                          ),
                           boxShadow: [
-                            BoxShadow(color: Colors.white.withValues(alpha: 0.2), blurRadius: 32, offset: const Offset(0, 8)),
+                            BoxShadow(
+                              color: palette.onHero.withValues(alpha: 0.20),
+                              blurRadius: 32,
+                              offset: const Offset(0, 8),
+                            ),
                           ],
                         ),
-                        child: const Icon(Icons.school_rounded, color: Colors.white, size: 44),
+                        child: Icon(Icons.school_rounded, color: palette.onHero, size: 44),
                       ),
                       const SizedBox(height: 22),
                       SvgPicture.asset(
                         AppAssets.brandLogoSvg,
                         height: 44,
-                        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        colorFilter: ColorFilter.mode(palette.onHero, BlendMode.srcIn),
                       ),
                       const SizedBox(height: 14),
                       Text(
@@ -111,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen> {
                           fontSize: 14.5,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.5,
-                          color: Colors.white.withValues(alpha: 0.88),
+                          color: palette.onHeroMuted,
                         ),
                       ),
                     ],
@@ -137,7 +152,8 @@ class _SplashScreenState extends State<SplashScreen> {
                               Container(
                                 width: 6, height: 6,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.5 + (i * 0.15)),
+                                  color: palette.onHero
+                                      .withValues(alpha: 0.5 + (i * 0.15)),
                                   shape: BoxShape.circle,
                                 ),
                               ).animate(onPlay: (c) => c.repeat(reverse: true))
@@ -153,7 +169,7 @@ class _SplashScreenState extends State<SplashScreen> {
                           style: TextStyle(
                             fontSize: 13.5,
                             height: 1.5,
-                            color: Colors.white.withValues(alpha: 0.82),
+                            color: palette.onHeroMuted,
                           ),
                         ),
                       ],

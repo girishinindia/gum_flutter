@@ -10,11 +10,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_typography.dart';
 import '../../features/home/domain/models/menu_action.dart';
+import '../../features/i18n/language_controller.dart';
+import '../../features/i18n/messages.dart';
+import '../../features/theming/theme_controller.dart';
+import 'language_sheet.dart';
+import 'theme_sheet.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({
@@ -23,6 +29,7 @@ class AppDrawer extends StatelessWidget {
     required this.lastName,
     required this.initial,
     required this.items,
+    required this.t,
     this.isLoggedIn = true,
     this.email,
     this.streakDays = 7,
@@ -38,6 +45,9 @@ class AppDrawer extends StatelessWidget {
   final String?     email;
   final int         streakDays;
   final List<MenuAction> items;
+  /// Translated UI strings. Used for the welcome card, sign-in/out CTAs,
+  /// and the "Language" row label below the regular menu.
+  final Messages    t;
   final ValueChanged<MenuAction>? onItemTap;
   final VoidCallback? onSignOut;
   final VoidCallback? onSignIn;
@@ -67,14 +77,22 @@ class AppDrawer extends StatelessWidget {
                 streakDays: streakDays,
               )
             else
-              _SignInCta(onSignIn: onSignIn),
+              _SignInCta(
+                t: t,
+                onSignIn: onSignIn,
+              ),
             const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 8, vertical: 6),
-                itemCount: items.length,
+                // +2 for the Language + Theme rows appended at the end.
+                // Language sits first (locale is more "global"), Theme
+                // sits second (visual personalisation).
+                itemCount: items.length + 2,
                 itemBuilder: (context, i) {
+                  if (i == items.length)     return _LanguageRow(t: t);
+                  if (i == items.length + 1) return _ThemeRow(t: t);
                   final m = items[i];
                   return _DrawerRow(
                     action: m,
@@ -88,7 +106,8 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             const Divider(height: 1, color: AppColors.outline),
-            if (isLoggedIn) _SignOutButton(onTap: onSignOut),
+            if (isLoggedIn)
+              _SignOutButton(label: t.signOut, onTap: onSignOut),
           ],
         ),
       ),
@@ -117,11 +136,14 @@ class _DrawerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Pull from active theme so the drawer header retints with the rest
+    // of the chrome (matches the hero gradient on the home behind it).
+    final palette = context.watch<ThemeController>().palette;
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 6),
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
       decoration: BoxDecoration(
-        gradient: AppColors.auroraGradient,
+        gradient: palette.heroGradient,
         borderRadius: AppRadius.rXl,
         boxShadow: AppRadius.heroShadow,
       ),
@@ -164,7 +186,7 @@ class _DrawerHeader extends StatelessWidget {
                     Text(
                       '$firstName $lastName',
                       style: AppTypography.h2.copyWith(
-                        color: Colors.white,
+                        color: palette.onHero,
                         fontSize: 16,
                       ),
                       maxLines: 1,
@@ -174,6 +196,7 @@ class _DrawerHeader extends StatelessWidget {
                     Text(
                       email ?? 'View profile',
                       style: AppTypography.captionOnGradient.copyWith(
+                        color: palette.onHeroMuted,
                         fontSize: 11.5,
                       ),
                       maxLines: 1,
@@ -189,23 +212,23 @@ class _DrawerHeader extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
+              color: palette.heroSurface,
               borderRadius: AppRadius.rPill,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.32),
+                color: palette.heroSurfaceBorder,
                 width: 1,
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.local_fire_department_rounded,
-                    color: Colors.white, size: 14),
+                Icon(Icons.local_fire_department_rounded,
+                    color: palette.onHero, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   '$streakDays-day streak',
                   style: AppTypography.caption.copyWith(
-                    color: Colors.white,
+                    color: palette.onHero,
                     fontWeight: FontWeight.w700,
                     fontSize: 11,
                   ),
@@ -296,7 +319,8 @@ class _DrawerRow extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────
 
 class _SignOutButton extends StatelessWidget {
-  const _SignOutButton({this.onTap});
+  const _SignOutButton({required this.label, this.onTap});
+  final String        label;
   final VoidCallback? onTap;
 
   @override
@@ -313,7 +337,7 @@ class _SignOutButton extends StatelessWidget {
                   color: AppColors.rose, size: 18),
               const SizedBox(width: 10),
               Text(
-                'Sign out',
+                label,
                 style: AppTypography.h3.copyWith(
                   color: AppColors.rose,
                   fontSize: 13.5,
@@ -328,20 +352,179 @@ class _SignOutButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Language row — opens the LanguageSheet on tap. Lives at the bottom
+// of the drawer list so it's reachable in both signed-in and
+// signed-out states without crowding the user actions above.
+// ─────────────────────────────────────────────────────────────────────
+
+class _LanguageRow extends StatelessWidget {
+  const _LanguageRow({required this.t});
+  final Messages t;
+
+  @override
+  Widget build(BuildContext context) {
+    // Watch so the trailing "(native name)" updates immediately when the
+    // user picks a new language inside the sheet.
+    final lang = context.watch<LanguageController>();
+    final trailing = lang.active.label;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: AppRadius.rMd,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          // Close the drawer first so the sheet animates over the home,
+          // not the drawer (matches the rest of the menu actions).
+          Navigator.pop(context);
+          LanguageSheet.show(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.sky500.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.language_rounded,
+                    color: AppColors.sky500, size: 19),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  t.language,
+                  style: AppTypography.h3.copyWith(fontSize: 14),
+                ),
+              ),
+              Text(
+                trailing,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.slate500,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.slate400, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Theme row — opens ThemeSheet on tap. Same shape as `_LanguageRow`,
+// trailing slot shows a live gradient swatch + active theme name so
+// the user can confirm what's applied without opening the picker.
+// ─────────────────────────────────────────────────────────────────────
+
+class _ThemeRow extends StatelessWidget {
+  const _ThemeRow({required this.t});
+  final Messages t;
+
+  @override
+  Widget build(BuildContext context) {
+    final themeCtrl = context.watch<ThemeController>();
+    final palette   = themeCtrl.palette;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: AppRadius.rMd,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          Navigator.pop(context);
+          ThemeSheet.show(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            children: [
+              // Themed icon chip — wears the active palette so the row
+              // itself doubles as a preview.
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(
+                  color: palette.primary500.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.palette_rounded,
+                    color: palette.primary500, size: 19),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  t.theme,
+                  style: AppTypography.h3.copyWith(fontSize: 14),
+                ),
+              ),
+              // Mini gradient swatch — 16×16 disc with a soft outline.
+              Container(
+                width: 18, height: 18,
+                decoration: BoxDecoration(
+                  gradient: palette.heroGradient,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: palette.primary500.withValues(alpha: 0.30),
+                      blurRadius: 6,
+                      spreadRadius: -2,
+                    ),
+                  ],
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                palette.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.slate500,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.slate400, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Signed-out CTA — replaces the user header when isLoggedIn = false
 // ─────────────────────────────────────────────────────────────────────
 
 class _SignInCta extends StatelessWidget {
-  const _SignInCta({this.onSignIn});
+  const _SignInCta({required this.t, this.onSignIn});
+  final Messages      t;
   final VoidCallback? onSignIn;
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.watch<ThemeController>().palette;
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 6),
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
       decoration: BoxDecoration(
-        gradient: AppColors.auroraGradient,
+        gradient: palette.heroGradient,
         borderRadius: AppRadius.rXl,
         boxShadow: AppRadius.heroShadow,
       ),
@@ -353,15 +536,15 @@ class _SignInCta extends StatelessWidget {
               Container(
                 width: 44, height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.20),
+                  color: palette.heroSurface,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.32),
+                    color: palette.heroSurfaceBorder,
                     width: 1.2,
                   ),
                 ),
-                child: const Icon(Icons.person_rounded,
-                    color: Colors.white, size: 22),
+                child: Icon(Icons.person_rounded,
+                    color: palette.onHero, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -369,9 +552,9 @@ class _SignInCta extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome to Grow Up More',
+                      t.welcome,
                       style: AppTypography.h2.copyWith(
-                        color: Colors.white,
+                        color: palette.onHero,
                         fontSize: 15,
                       ),
                       maxLines: 1,
@@ -379,8 +562,9 @@ class _SignInCta extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Sign in to track your progress',
+                      t.trackProgress,
                       style: AppTypography.captionOnGradient.copyWith(
+                        color: palette.onHeroMuted,
                         fontSize: 11.5,
                       ),
                       maxLines: 1,
@@ -409,13 +593,13 @@ class _SignInCta extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.login_rounded,
-                          size: 16, color: AppColors.accent600),
+                      Icon(Icons.login_rounded,
+                          size: 16, color: palette.primary700),
                       const SizedBox(width: 6),
                       Text(
-                        'Sign in',
+                        t.signIn,
                         style: AppTypography.buttonLabel.copyWith(
-                          color: AppColors.accent600,
+                          color: palette.primary700,
                           fontSize: 13,
                         ),
                       ),

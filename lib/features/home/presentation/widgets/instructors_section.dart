@@ -25,7 +25,7 @@ class InstructorsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(eyebrow: 'LEARN FROM THE BEST', title: 'Top Instructors'),
+        const SectionHeader(eyebrow: 'LEARN FROM THE BEST', title: 'Top Instructors'),
         // Auto-sizing carousel — fixes the 6 px Android overflow.
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,

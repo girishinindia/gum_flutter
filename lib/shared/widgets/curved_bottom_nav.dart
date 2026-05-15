@@ -15,9 +15,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../features/theming/theme_controller.dart';
 
 /// One nav slot (icon + label + optional badge).
 class CurvedNavItem {
@@ -53,6 +55,9 @@ class CurvedBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     assert(items.length == 4, 'CurvedBottomNav expects exactly 4 items.');
+    // Themed nav gradient + FAB gradient. Painters take it as a field
+    // since CustomPainter has no BuildContext of its own.
+    final palette = context.watch<ThemeController>().palette;
 
     return SizedBox(
       width: size.width,
@@ -64,7 +69,7 @@ class CurvedBottomNav extends StatelessWidget {
           Positioned.fill(
             child: CustomPaint(
               size: Size(size.width, 86),
-              painter: _BNBPainter(),
+              painter: _BNBPainter(gradient: palette.bottomNavGradient),
             ),
           ),
 
@@ -134,6 +139,7 @@ class _Fab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.watch<ThemeController>().palette;
     return GestureDetector(
       onTap: () {
         HapticFeedback.mediumImpact();
@@ -144,11 +150,11 @@ class _Fab extends StatelessWidget {
         height: 64,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: AppColors.brandGradient,
+          gradient: palette.brandGradient,
           border: Border.all(color: Colors.white, width: 3),
           boxShadow: [
             BoxShadow(
-              color: AppColors.accent.withValues(alpha: 0.50),
+              color: palette.primary500.withValues(alpha: 0.50),
               blurRadius: 26,
               offset: const Offset(0, 10),
               spreadRadius: -4,
@@ -272,11 +278,17 @@ class _NavItem extends StatelessWidget {
 // ═════════════════════════════════════════════════════════════════════
 
 class _BNBPainter extends CustomPainter {
+  _BNBPainter({required this.gradient});
+
+  /// Themed sweep — supplied by `CurvedBottomNav` from the active palette
+  /// so the curved bg retints alongside the rest of the chrome.
+  final LinearGradient gradient;
+
   @override
   void paint(Canvas canvas, Size size) {
     final shaderRect = Rect.fromLTWH(0, 0, size.width, size.height);
     final paint = Paint()
-      ..shader = AppColors.bottomNavGradient.createShader(shaderRect)
+      ..shader = gradient.createShader(shaderRect)
       ..style  = PaintingStyle.fill;
 
     // Exact path from BNBCustomePainter (preserved 1:1).
@@ -300,7 +312,8 @@ class _BNBPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _BNBPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _BNBPainter oldDelegate) =>
+      oldDelegate.gradient != gradient;
 }
 
 class _BNBStrokePainter extends CustomPainter {

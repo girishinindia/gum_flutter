@@ -14,8 +14,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../features/catalog/categories_controller.dart';
+import '../../../features/i18n/language_controller.dart';
+import '../../../features/theming/theme_controller.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/curved_bottom_nav.dart';
 import '../../../shared/widgets/page_constraint.dart';
@@ -46,21 +50,28 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoggedIn = false;
   int  _navIndex   = 0;
 
-  static const _navItems = <CurvedNavItem>[
-    CurvedNavItem(icon: Icons.home_rounded,         label: 'Home'),
-    CurvedNavItem(icon: Icons.menu_book_rounded,    label: 'Learn'),
-    CurvedNavItem(icon: Icons.bookmark_rounded,     label: 'Saved', badge: true),
-    CurvedNavItem(icon: Icons.person_rounded,       label: 'Profile'),
-  ];
-
   void _openDrawer() => _scaffoldKey.currentState?.openEndDrawer();
 
   @override
   Widget build(BuildContext context) {
     final size       = MediaQuery.of(context).size;
-    final categories = _repo.categories();
+    // i18n + API + theme state — watch so language/theme flips rebuild
+    // the whole tree (cheap because most descendants are const subtrees).
+    final lang       = context.watch<LanguageController>();
+    final cats       = context.watch<CategoriesController>();
+    final themeCtrl  = context.watch<ThemeController>();
+    final palette    = themeCtrl.palette;
+    final t          = lang.t;
     final courses    = _repo.popularCourses();
-    final menu       = _repo.drawerMenu();
+    final menu       = _repo.drawerMenu(t);
+
+    // Bottom-nav items — labels come from `t` so they translate too.
+    final navItems = <CurvedNavItem>[
+      CurvedNavItem(icon: Icons.home_rounded,      label: t.navHome),
+      CurvedNavItem(icon: Icons.menu_book_rounded, label: t.navLearn),
+      CurvedNavItem(icon: Icons.bookmark_rounded,  label: t.navSaved, badge: true),
+      CurvedNavItem(icon: Icons.person_rounded,    label: t.navProfile),
+    ];
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -80,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           email:     'manshi.khunt@gmail.com',
           streakDays: 7,
           items: menu,
+          t:     t,
           onItemTap:  (_) {},
           onSignOut:  () => setState(() => _isLoggedIn = false),
           onSignIn:   () => setState(() => _isLoggedIn = true),
@@ -88,11 +100,12 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Page background — subtle vertical tint sandwich (paints
             // edge-to-edge, even when the foreground is width-clamped
-            // by PageConstraint on tablets).
-            const Positioned.fill(
+            // by PageConstraint on tablets). Gradient is theme-aware so
+            // each palette's body tint matches its hero.
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: AppColors.pageBackgroundGradient,
+                  gradient: palette.pageBgGradient,
                 ),
               ),
             ),
@@ -119,24 +132,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 3️⃣  Category tiles
+                // 3️⃣  Category tiles — items + isLoading flow from
+                //     CategoriesController. The tile renders English
+                //     first and swaps to translated names when the
+                //     overlay fetch completes (zero flicker).
                 SliverToBoxAdapter(
-                  child: CategoriesGrid(items: categories),
+                  child: CategoriesGrid(
+                    items: cats.displayed,
+                    t: t,
+                    isLoading: !cats.isLoaded,
+                  ),
                 ),
 
-                // 4️⃣  Featured cohort (own outer top padding = 18)
-                const SliverToBoxAdapter(
+                // 4️⃣  Featured cohort (own outer top padding = 18).
+                //     Eyebrow + gradient flow from `t` + palette so the
+                //     card retints alongside the rest of the chrome.
+                SliverToBoxAdapter(
                   child: FeaturedCard(
-                    eyebrow:  'FEATURED COHORT',
+                    eyebrow:  t.featuredCohortEyebrow,
                     title:    'AI & Machine Learning Pro',
                     subtitle:
                         'Live mentor sessions · placement support · 7-month cohort',
                     cta:      'Reserve your seat',
-                    gradient: [
-                      AppColors.violet600,
-                      AppColors.accent,
-                      AppColors.sky500,
-                    ],
+                    gradient: palette.featureGradient.colors,
                     icon:  Icons.psychology_alt_rounded,
                     badge: 'LIMITED',
                   ),
@@ -182,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedIndex: _navIndex,
           onItemTapped: (i) => setState(() => _navIndex = i),
           onFabTapped: () {},
-          items: _navItems,
+          items: navItems,
         ),
       ),
     );

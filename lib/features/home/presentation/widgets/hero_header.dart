@@ -20,10 +20,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_radius.dart';
+import '../../../../shared/widgets/language_sheet.dart';
+import '../../../i18n/language_controller.dart';
+import '../../../theming/theme_controller.dart';
 
 // ═════════════════════════════════════════════════════════════════════
 // PUBLIC — sticky brand app bar.
@@ -44,6 +47,8 @@ class BrandSliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Themed brand gradient + glow tint for the graduation chip.
+    final palette = context.watch<ThemeController>().palette;
     return SliverAppBar(
       pinned: true,
       backgroundColor: Colors.white,
@@ -62,11 +67,11 @@ class BrandSliverAppBar extends StatelessWidget {
           Container(
             width: 42, height: 42,
             decoration: BoxDecoration(
-              gradient: AppColors.brandGradient,
+              gradient: palette.brandGradient,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.sky500.withValues(alpha: 0.30),
+                  color: palette.primary500.withValues(alpha: 0.30),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                   spreadRadius: -2,
@@ -86,50 +91,62 @@ class BrandSliverAppBar extends StatelessWidget {
         ],
       ),
       actions: [
+        // Compact action cluster — Language pill on the left, drawer
+        // menu on the right. Same shape parity (pill / circle) as the
+        // mobile-web language popup trigger so muscle memory transfers.
         Padding(
           padding: const EdgeInsets.only(right: 12),
-          child: Stack(
-            clipBehavior: Clip.none,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              InkResponse(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  onMenuTap();
-                },
-                radius: 24,
-                child: Container(
-                  width: 42, height: 42,
-                  decoration: const BoxDecoration(
-                    color: AppColors.slate100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.menu_rounded,
-                      color: AppColors.slate700, size: 22),
-                ),
-              ),
-              if (showNotificationDot)
-                Positioned(
-                  top: -1, right: -1,
-                  child: Container(
-                    width: 10, height: 10,
-                    decoration: BoxDecoration(
-                      color: AppColors.amber,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.amber.withValues(alpha: 0.6),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                  ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
-                        begin: const Offset(0.9, 0.9),
-                        end:   const Offset(1.15, 1.15),
-                        duration: 900.ms,
+              // ── Language pill ─────────────────────────────────────
+              const _LanguagePillButton(),
+              const SizedBox(width: 8),
+              // ── Drawer menu (with unread notification dot) ────────
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  InkResponse(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onMenuTap();
+                    },
+                    radius: 24,
+                    child: Container(
+                      width: 42, height: 42,
+                      decoration: const BoxDecoration(
+                        color: AppColors.slate100,
+                        shape: BoxShape.circle,
                       ),
-                ),
+                      child: const Icon(Icons.menu_rounded,
+                          color: AppColors.slate700, size: 22),
+                    ),
+                  ),
+                  if (showNotificationDot)
+                    Positioned(
+                      top: -1, right: -1,
+                      child: Container(
+                        width: 10, height: 10,
+                        decoration: BoxDecoration(
+                          color: AppColors.amber,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.amber.withValues(alpha: 0.6),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+                            begin: const Offset(0.9, 0.9),
+                            end:   const Offset(1.15, 1.15),
+                            duration: 900.ms,
+                          ),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
@@ -163,10 +180,11 @@ class HeroBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.watch<ThemeController>().palette;
     return Container(
-      decoration: const BoxDecoration(
-        gradient: AppColors.auroraGradient,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        gradient: palette.heroGradient,
+        borderRadius: const BorderRadius.only(
           bottomLeft:  Radius.circular(28),
           bottomRight: Radius.circular(28),
         ),
@@ -228,11 +246,20 @@ class HeroBody extends StatelessWidget {
 // ═════════════════════════════════════════════════════════════════════
 
 // ─── Glass search field ───────────────────────────────────────────────
+//
+// All colours pull from the active palette so the chip stays readable
+// regardless of whether the hero is dark (Aurora / Ocean → white text on
+// white-tinted glass) or pastel (Sunshine / Champagne / Mint / Spring /
+// Peach Rose / Cyan Lavender → slate-900 text on dark-tinted glass).
+//
+// The ⌘K chip uses `palette.brandGradient` with white text — guaranteed
+// contrast on every theme since the brand gradient is always saturated.
 class _GlassSearch extends StatelessWidget {
   const _GlassSearch();
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.watch<ThemeController>().palette;
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
@@ -240,8 +267,8 @@ class _GlassSearch extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.18),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.32), width: 1),
+            color: palette.heroSurface,
+            border: Border.all(color: palette.heroSurfaceBorder, width: 1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
@@ -249,28 +276,42 @@ class _GlassSearch extends StatelessWidget {
               Container(
                 width: 26, height: 26,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  // Slightly stronger than the field background so the
+                  // icon chip reads as a separate element.
+                  color: palette.onHero.withValues(alpha: 0.18),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.search_rounded, color: Colors.white, size: 16),
+                child: Icon(Icons.search_rounded, color: palette.onHero, size: 16),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Search courses · Python · AI…',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13),
+                  style: TextStyle(
+                    color: palette.onHeroMuted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [AppColors.amber, Color(0xFFD97706)]),
+                  gradient: palette.brandGradient,
                   borderRadius: BorderRadius.circular(999),
+                  boxShadow: [
+                    BoxShadow(
+                      color: palette.primary500.withValues(alpha: 0.35),
+                      blurRadius: 6,
+                      spreadRadius: -1,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: const Text(
                   '⌘K',
                   style: TextStyle(
-                    color: Color(0xFF78350F),
+                    color: Colors.white,
                     fontWeight: FontWeight.w800,
                     fontSize: 10,
                     letterSpacing: 0.3,
@@ -279,6 +320,61 @@ class _GlassSearch extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Language pill — opens the LanguageSheet on tap ───────────────────
+//
+// Mirrors the mobile-web `MobileLanguagePopup` trigger: small circular
+// pill with the globe icon + the active ISO code so the user can see
+// what's currently picked at a glance ("EN", "हि", "DE", …). Tap → open
+// the same modal sheet that's shown from the drawer "Language" row.
+class _LanguagePillButton extends StatelessWidget {
+  const _LanguagePillButton();
+
+  @override
+  Widget build(BuildContext context) {
+    // Watch the language controller so the ISO badge updates the moment
+    // the user picks a new language inside the sheet.
+    final lang = context.watch<LanguageController>();
+    final iso  = lang.iso.toUpperCase();
+
+    return InkResponse(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        LanguageSheet.show(context);
+      },
+      radius: 24,
+      child: Container(
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: const BoxDecoration(
+          color: AppColors.slate100,
+          // Pill shape — distinct from the drawer's circle, so the two
+          // buttons read as separate affordances even at a glance.
+          borderRadius: BorderRadius.all(Radius.circular(21)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.language_rounded,
+                color: AppColors.slate700, size: 18),
+            const SizedBox(width: 4),
+            // Active ISO — keeps the chip useful as a status indicator
+            // (e.g. shows "हि" when Hindi is active, "EN" for English).
+            Text(
+              iso,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.slate700,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -366,6 +462,10 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Theme-aware foreground — slate on light hero gradients, white on
+    // the dark ones. Background tint follows the same logic via
+    // `heroSurface` / `heroSurfaceBorder`.
+    final palette = context.watch<ThemeController>().palette;
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: BackdropFilter(
@@ -375,12 +475,12 @@ class _StatCard extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.white.withValues(alpha: 0.22),
-                Colors.white.withValues(alpha: 0.10),
+                palette.onHero.withValues(alpha: 0.22),
+                palette.onHero.withValues(alpha: 0.10),
               ],
               begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+            border: Border.all(color: palette.heroSurfaceBorder, width: 1),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Stack(
@@ -401,8 +501,8 @@ class _StatCard extends StatelessWidget {
                 children: [
                   _CountUp(
                     value: value,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: palette.onHero,
                       fontWeight: FontWeight.w800,
                       fontSize: 19,
                       letterSpacing: -0.5,
@@ -412,7 +512,7 @@ class _StatCard extends StatelessWidget {
                   Text(
                     label,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
+                      color: palette.onHeroMuted,
                       fontWeight: FontWeight.w700,
                       fontSize: 9,
                       letterSpacing: 0.7,

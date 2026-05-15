@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
-import '../domain/models/category_item.dart';
+import '../../i18n/messages.dart';
 import '../domain/models/course_bundle.dart';
 import '../domain/models/course_offer.dart';
 import '../domain/models/instructor.dart';
@@ -18,65 +18,14 @@ import '../domain/models/webinar.dart';
 class HomeRepository {
   const HomeRepository();
 
-  // ── Categories — top of the home grid ────────────────────────────
-  List<CategoryItem> categories() => const [
-    CategoryItem(
-      label: 'Courses',
-      icon: Icons.menu_book_rounded,
-      iconGradient: [AppColors.sky500, AppColors.accent],
-      glowTint: AppColors.sky500,
-      subtitle: '60+ available',
-    ),
-    CategoryItem(
-      label: 'AI / ML',
-      icon: Icons.psychology_alt_rounded,
-      iconGradient: [AppColors.success, AppColors.sky500],
-      glowTint: AppColors.success,
-      subtitle: 'HOT · 12k+',
-    ),
-    CategoryItem(
-      label: 'Web Dev',
-      icon: Icons.code_rounded,
-      iconGradient: [AppColors.amber, AppColors.rose],
-      glowTint: AppColors.amber,
-      subtitle: '45 courses',
-    ),
-    CategoryItem(
-      label: 'Cyber',
-      icon: Icons.shield_rounded,
-      iconGradient: [AppColors.violet500, AppColors.accent],
-      glowTint: AppColors.violet500,
-      subtitle: '28 courses',
-    ),
-    CategoryItem(
-      label: 'Cloud',
-      icon: Icons.cloud_rounded,
-      iconGradient: [AppColors.accent, AppColors.sky400],
-      glowTint: AppColors.accent,
-      subtitle: 'Devops + AWS',
-    ),
-    CategoryItem(
-      label: 'Database',
-      icon: Icons.storage_rounded,
-      iconGradient: [AppColors.rose, AppColors.amber],
-      glowTint: AppColors.rose,
-      subtitle: 'SQL · NoSQL',
-    ),
-    CategoryItem(
-      label: 'Design',
-      icon: Icons.palette_rounded,
-      iconGradient: [AppColors.violet500, AppColors.rose],
-      glowTint: AppColors.violet500,
-      subtitle: 'UI / UX',
-    ),
-    CategoryItem(
-      label: 'Marketing',
-      icon: Icons.trending_up_rounded,
-      iconGradient: [AppColors.success, AppColors.accent],
-      glowTint: AppColors.success,
-      subtitle: 'Digital · SEO',
-    ),
-  ];
+  // ── Categories ────────────────────────────────────────────────────
+  //
+  // Removed: categories used to live here as a hardcoded list. They
+  // now flow through `CategoriesController` (API-backed, language-aware,
+  // English-baseline + per-language overlay). See:
+  //   lib/features/catalog/categories_controller.dart
+  //   lib/features/catalog/data/catalog_api.dart
+  //   lib/features/catalog/data/category_icon_styles.dart  (icon lookup)
 
   // ── Popular courses — carousel ───────────────────────────────────
   List<CourseOffer> popularCourses() => const [
@@ -138,17 +87,21 @@ class HomeRepository {
   ];
 
   // ── Drawer menu rows ─────────────────────────────────────────────
-  List<MenuAction> drawerMenu() => const [
-    MenuAction(label: 'Home',          icon: Icons.home_rounded,            iconColor: AppColors.sky500),
-    MenuAction(label: 'My Courses',    icon: Icons.menu_book_rounded,       iconColor: AppColors.accent,    badgeCount: 3),
-    MenuAction(label: 'Wishlist',      icon: Icons.favorite_rounded,        iconColor: AppColors.rose),
-    MenuAction(label: 'Cart',          icon: Icons.shopping_cart_rounded,   iconColor: AppColors.amber,     badgeCount: 2),
-    MenuAction(label: 'Wallet',        icon: Icons.account_balance_wallet_rounded, iconColor: AppColors.success),
-    MenuAction(label: 'Notifications', icon: Icons.notifications_rounded,   iconColor: AppColors.violet500, badgeCount: 4),
-    MenuAction(label: 'Discussion',    icon: Icons.forum_rounded,           iconColor: AppColors.sky500),
-    MenuAction(label: 'Profile',       icon: Icons.person_rounded,          iconColor: AppColors.accent),
-    MenuAction(label: 'Settings',      icon: Icons.settings_rounded,        iconColor: AppColors.slate600),
-    MenuAction(label: 'Help & Support',icon: Icons.help_outline_rounded,    iconColor: AppColors.slate600),
+  //
+  // Labels come from the active `Messages` so the drawer switches
+  // languages with the rest of the UI. Icons + accent colours stay
+  // constant.
+  List<MenuAction> drawerMenu(Messages t) => [
+    MenuAction(label: t.drawerHome,          icon: Icons.home_rounded,            iconColor: AppColors.sky500),
+    MenuAction(label: t.drawerMyCourses,     icon: Icons.menu_book_rounded,       iconColor: AppColors.accent,    badgeCount: 3),
+    MenuAction(label: t.drawerWishlist,      icon: Icons.favorite_rounded,        iconColor: AppColors.rose),
+    MenuAction(label: t.drawerCart,          icon: Icons.shopping_cart_rounded,   iconColor: AppColors.amber,     badgeCount: 2),
+    MenuAction(label: t.drawerWallet,        icon: Icons.account_balance_wallet_rounded, iconColor: AppColors.success),
+    MenuAction(label: t.drawerNotifications, icon: Icons.notifications_rounded,   iconColor: AppColors.violet500, badgeCount: 4),
+    MenuAction(label: t.drawerDiscussion,    icon: Icons.forum_rounded,           iconColor: AppColors.sky500),
+    MenuAction(label: t.drawerProfile,       icon: Icons.person_rounded,          iconColor: AppColors.accent),
+    MenuAction(label: t.drawerSettings,      icon: Icons.settings_rounded,        iconColor: AppColors.slate600),
+    MenuAction(label: t.drawerHelp,          icon: Icons.help_outline_rounded,    iconColor: AppColors.slate600),
   ];
 
   // ── User snapshot (would come from /auth/me later) ───────────────

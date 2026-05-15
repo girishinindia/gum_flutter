@@ -14,10 +14,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../theming/theme_controller.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/models/course_offer.dart';
@@ -526,8 +528,8 @@ class _PriceRow extends StatelessWidget {
         Container(
           width: 28,
           height: 28,
-          decoration: const BoxDecoration(
-            gradient: AppColors.brandGradient,
+          decoration: BoxDecoration(
+            gradient: context.watch<ThemeController>().palette.brandGradient,
             shape: BoxShape.circle,
             boxShadow: AppRadius.brandShadow,
           ),
@@ -548,7 +550,7 @@ class _ResumeCta extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        gradient: AppColors.brandGradient,
+        gradient: context.watch<ThemeController>().palette.brandGradient,
         borderRadius: AppRadius.rPill,
         boxShadow: AppRadius.brandShadow,
       ),

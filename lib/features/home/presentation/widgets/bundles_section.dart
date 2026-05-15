@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -27,7 +26,7 @@ class BundlesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(eyebrow: 'BEST VALUE', title: 'Course Bundles'),
+        const SectionHeader(eyebrow: 'BEST VALUE', title: 'Course Bundles'),
         // Bundle card uses an internal `Spacer` — needs a bounded
         // height. Wrap the row in IntrinsicHeight so the tallest
         // card's height becomes the row height, and Spacer works

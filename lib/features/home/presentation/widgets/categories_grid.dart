@@ -18,20 +18,49 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../domain/models/category_item.dart';
+import '../../../catalog/data/category_icon_styles.dart';
+import '../../../catalog/domain/sub_category.dart';
+import '../../../i18n/messages.dart';
 
 class CategoriesGrid extends StatelessWidget {
   const CategoriesGrid({
     super.key,
     required this.items,
+    required this.t,
     this.onItemTap,
+    this.isLoading = false,
+    this.previewLimit = 6,
   });
 
-  final List<CategoryItem> items;
-  final ValueChanged<CategoryItem>? onItemTap;
+  /// Items now come from the API (`CategoriesController.displayed`).
+  /// Pre-resolved `displayName` already handles the translation +
+  /// fallback chain — the tile just renders it.
+  final List<SubCategory> items;
+
+  /// Cap on how many tiles we render on the home. The "See all" chip
+  /// in the section header already routes users to the full list, so
+  /// the grid only needs to surface the first N. 8 = 2 rows × 4 cols
+  /// on phones (and a clean 1 / 1 / 1 row on tablets at 6 / 8 cols).
+  /// Set to `null` to render every item.
+  final int? previewLimit;
+
+  /// Translated UI strings (eyebrow, title, "See all").
+  final Messages t;
+
+  /// True while the boot fetch is in flight — show a shimmer skeleton.
+  final bool isLoading;
+
+  final ValueChanged<SubCategory>? onItemTap;
 
   @override
   Widget build(BuildContext context) {
+    // Cap the displayed list — the "See all" chip handles overflow.
+    // `take(min(items.length, limit))` would do the same, but `sublist`
+    // produces a List that GridView.builder can length-check cheaply.
+    final visible = (previewLimit != null && items.length > previewLimit!)
+        ? items.sublist(0, previewLimit!)
+        : items;
+
     return Padding(
       // Top = responsive sectionTightFor (10 / 16 / 20 per breakpoint).
       // Categories sits directly under the aurora hero — tighter than
@@ -57,13 +86,13 @@ class CategoriesGrid extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('EXPLORE', style: AppTypography.eyebrow),
+                    Text(t.exploreEyebrow, style: AppTypography.eyebrow),
                     const SizedBox(height: AppSpacing.eyebrowToTitle),
-                    Text('Browse Categories', style: AppTypography.h2),
+                    Text(t.browseCategoriesTitle, style: AppTypography.h2),
                   ],
                 ),
                 const Spacer(),
-                _SeeAllChip(onTap: () {}),
+                _SeeAllChip(label: t.seeAll, onTap: () {}),
               ],
             ),
           ),
@@ -80,22 +109,30 @@ class CategoriesGrid extends StatelessWidget {
             child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: items.length,
+              itemCount: visible.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                // 3 columns on phones = 6 tiles in 2 rows (matches the
+                // 6-cap above). On tablets we keep 6 in a single row so
+                // the wider viewport doesn't collapse the section into
+                // a half-empty visual block.
                 crossAxisCount: R<int>(
-                  normal:  4,
+                  normal:  3,
                   tabletP: 6,
-                  tabletL: 8,
+                  tabletL: 6,
                 ).resolve(context),
                 mainAxisSpacing:  AppSpacing.tileGap,
                 crossAxisSpacing: AppSpacing.tileGap,
+                // Slightly taller tiles than before — 3-col phones give
+                // each tile more width, and the label is no longer
+                // shrink-fitted so 2-line names ("Programming Languages",
+                // "Data Science & Analytics", "साइबर सुरक्षा") need room.
                 mainAxisExtent: R<double>(
-                  normal:  96,
-                  tabletP: 110,
+                  normal:  118,
+                  tabletP: 124,
                 ).resolve(context),
               ),
               itemBuilder: (context, i) {
-                final item = items[i];
+                final item = visible[i];
                 return _CategoryTile(
                   item: item,
                   onTap: () {
@@ -123,18 +160,29 @@ class CategoriesGrid extends StatelessWidget {
 class _CategoryTile extends StatelessWidget {
   const _CategoryTile({required this.item, required this.onTap});
 
-  final CategoryItem item;
+  final SubCategory item;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    // Slug-driven visual treatment — icon, gradient, glow tint all
+    // derive from a frontend lookup table since the API doesn't carry
+    // Material icon code-points. Unknown slugs get a safe fallback.
+    final style = CategoryIconStyles.forSlug(item.slug);
+
+    // Subtitle: derive from courseCount (with a tiny humanisation).
+    // Falls back to empty string — the FittedBox below just collapses.
+    final subtitle = item.courseCount > 0
+        ? '${item.courseCount} courses'
+        : '';
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: AppRadius.rLg,
-        splashColor: item.glowTint.withValues(alpha: 0.08),
-        highlightColor: item.glowTint.withValues(alpha: 0.04),
+        splashColor: style.glowTint.withValues(alpha: 0.08),
+        highlightColor: style.glowTint.withValues(alpha: 0.04),
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
@@ -156,8 +204,8 @@ class _CategoryTile extends StatelessWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        item.glowTint.withValues(alpha: 0.22),
-                        item.glowTint.withValues(alpha: 0.0),
+                        style.glowTint.withValues(alpha: 0.22),
+                        style.glowTint.withValues(alpha: 0.0),
                       ],
                     ),
                   ),
@@ -174,9 +222,9 @@ class _CategoryTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        item.glowTint.withValues(alpha: 0.0),
-                        item.glowTint.withValues(alpha: 0.85),
-                        item.glowTint.withValues(alpha: 0.0),
+                        style.glowTint.withValues(alpha: 0.0),
+                        style.glowTint.withValues(alpha: 0.85),
+                        style.glowTint.withValues(alpha: 0.0),
                       ],
                     ),
                     borderRadius: const BorderRadius.vertical(
@@ -187,9 +235,7 @@ class _CategoryTile extends StatelessWidget {
               ),
 
               // Content — Positioned.fill so the Column receives the
-              // full tile height & width; otherwise mainAxisAlignment
-              // .center has nothing to centre against (a bare Padding
-              // inside a Stack sizes to its child and anchors top-start).
+              // full tile height & width.
               Positioned.fill(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(6, 8, 6, 8),
@@ -198,47 +244,45 @@ class _CategoryTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       _IconChip(
-                        icon: item.icon,
-                        gradient: item.iconGradient,
-                        tint: item.glowTint,
+                        icon: style.icon,
+                        gradient: style.iconGradient,
+                        tint: style.glowTint,
                       ),
                       const SizedBox(height: 8),
-                      // FittedBox scales long labels (e.g. "Marketing")
-                      // down so they fit a 60–80 px tile width without
-                      // ellipsis on any device size.
-                      SizedBox(
-                        height: 14,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            item.label,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            style: AppTypography.h3.copyWith(
-                              fontSize: 12,
-                              letterSpacing: -0.1,
-                              height: 1.1,
-                            ),
-                          ),
+                      // Fixed font size across every tile (no FittedBox
+                      // scaling), so the grid reads as a uniform set.
+                      // Long names ("Programming Languages", "Data
+                      // Science & Analytics") wrap to 2 lines; anything
+                      // longer is ellipsised. Centered for visual rhythm
+                      // with the icon chip above.
+                      Text(
+                        item.displayName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: AppTypography.h3.copyWith(
+                          fontSize: 12,
+                          letterSpacing: -0.1,
+                          height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      SizedBox(
-                        height: 12,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            item.subtitle,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            style: AppTypography.caption.copyWith(
-                              fontSize: 9,
-                              color: AppColors.slate500,
-                              height: 1.1,
-                            ),
+                      // Subtitle (e.g. "12 courses") sits below in a
+                      // consistent slate-500 caption. Hidden when empty
+                      // so the column doesn't reserve a phantom slot.
+                      if (subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: AppTypography.caption.copyWith(
+                            fontSize: 10,
+                            color: AppColors.slate500,
+                            height: 1.15,
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -314,7 +358,8 @@ class _IconChip extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────
 
 class _SeeAllChip extends StatelessWidget {
-  const _SeeAllChip({required this.onTap});
+  const _SeeAllChip({required this.label, required this.onTap});
+  final String       label;
   final VoidCallback onTap;
 
   @override
@@ -333,7 +378,7 @@ class _SeeAllChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'See all',
+              label,
               style: AppTypography.caption.copyWith(
                 color: AppColors.brand700,
                 fontWeight: FontWeight.w700,

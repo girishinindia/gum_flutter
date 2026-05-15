@@ -9,10 +9,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../theming/theme_controller.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/models/webinar.dart';
@@ -27,7 +29,7 @@ class WebinarsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(eyebrow: 'THIS WEEK', title: 'Upcoming Webinars'),
+        const SectionHeader(eyebrow: 'THIS WEEK', title: 'Upcoming Webinars'),
         // Auto-sizing carousel — no fixed height.
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -330,7 +332,7 @@ class _RegisterCta extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        gradient: AppColors.brandGradient,
+        gradient: context.watch<ThemeController>().palette.brandGradient,
         borderRadius: AppRadius.rPill,
         boxShadow: AppRadius.brandShadow,
       ),
