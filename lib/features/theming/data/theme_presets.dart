@@ -82,6 +82,17 @@ class ThemePresets {
     onHeroMuted:        Color(0xE6FFFFFF), // white @ 90 %
     heroSurface:        Color(0x2EFFFFFF), // white @ 18 %
     heroSurfaceBorder:  Color(0x52FFFFFF), // white @ 32 %
+    // Aurora's pageBg is light → slate-900 reads on it.
+    onPageBg:           Color(0xFF0F172A),
+    onPageBgMuted:      Color(0xFF64748B),
+    // Light theme — chrome stays white so the drawer + app bar look
+    // exactly as they did before themes existed (Aurora identity).
+    chromeSurface:       Colors.white,
+    chromeSurfaceMuted:  Color(0xFFF1F5F9), // slate-100
+    chromeOutline:       Color(0xFFE2E8F0), // slate-200
+    onChrome:            Color(0xFF0F172A), // slate-900
+    onChromeMuted:       Color(0xFF64748B), // slate-500
+    isDark:              false,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -124,6 +135,14 @@ class ThemePresets {
     onHeroMuted:        Color(0xCC0F172A), // slate-900 @ 80 %
     heroSurface:        Color(0x1F0F172A), // slate @ 12 %
     heroSurfaceBorder:  Color(0x330F172A), // slate @ 20 %
+    onPageBg:           Color(0xFF0F172A),
+    onPageBgMuted:      Color(0xFF64748B),
+    chromeSurface:       Colors.white,
+    chromeSurfaceMuted:  Color(0xFFF1F5F9),
+    chromeOutline:       Color(0xFFE2E8F0),
+    onChrome:            Color(0xFF0F172A),
+    onChromeMuted:       Color(0xFF64748B),
+    isDark:              false,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -165,6 +184,17 @@ class ThemePresets {
     onHeroMuted:        Color(0xCC0F172A),
     heroSurface:        Color(0x1F0F172A),
     heroSurfaceBorder:  Color(0x330F172A),
+    // Light pastel page-bg → dark text reads on it.
+    onPageBg:           Color(0xFF0F172A),
+    onPageBgMuted:      Color(0xFF64748B),
+    // Light theme — chrome stays white so the drawer + app bar look
+    // exactly as they did before themes existed (Aurora identity).
+    chromeSurface:       Colors.white,
+    chromeSurfaceMuted:  Color(0xFFF1F5F9), // slate-100
+    chromeOutline:       Color(0xFFE2E8F0), // slate-200
+    onChrome:            Color(0xFF0F172A), // slate-900
+    onChromeMuted:       Color(0xFF64748B), // slate-500
+    isDark:              false,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -206,6 +236,17 @@ class ThemePresets {
     onHeroMuted:        Color(0xCC0F172A),
     heroSurface:        Color(0x1F0F172A),
     heroSurfaceBorder:  Color(0x330F172A),
+    // Light pastel page-bg → dark text reads on it.
+    onPageBg:           Color(0xFF0F172A),
+    onPageBgMuted:      Color(0xFF64748B),
+    // Light theme — chrome stays white so the drawer + app bar look
+    // exactly as they did before themes existed (Aurora identity).
+    chromeSurface:       Colors.white,
+    chromeSurfaceMuted:  Color(0xFFF1F5F9), // slate-100
+    chromeOutline:       Color(0xFFE2E8F0), // slate-200
+    onChrome:            Color(0xFF0F172A), // slate-900
+    onChromeMuted:       Color(0xFF64748B), // slate-500
+    isDark:              false,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -247,6 +288,17 @@ class ThemePresets {
     onHeroMuted:        Color(0xCC0F172A),
     heroSurface:        Color(0x1F0F172A),
     heroSurfaceBorder:  Color(0x330F172A),
+    // Light pastel page-bg → dark text reads on it.
+    onPageBg:           Color(0xFF0F172A),
+    onPageBgMuted:      Color(0xFF64748B),
+    // Light theme — chrome stays white so the drawer + app bar look
+    // exactly as they did before themes existed (Aurora identity).
+    chromeSurface:       Colors.white,
+    chromeSurfaceMuted:  Color(0xFFF1F5F9), // slate-100
+    chromeOutline:       Color(0xFFE2E8F0), // slate-200
+    onChrome:            Color(0xFF0F172A), // slate-900
+    onChromeMuted:       Color(0xFF64748B), // slate-500
+    isDark:              false,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -289,6 +341,17 @@ class ThemePresets {
     onHeroMuted:        Color(0xE6FFFFFF),
     heroSurface:        Color(0x2EFFFFFF),
     heroSurfaceBorder:  Color(0x52FFFFFF),
+    // Page bg stays light (Ocean is light-mode with a dark hero only).
+    onPageBg:           Color(0xFF0F172A),
+    onPageBgMuted:      Color(0xFF64748B),
+    // Light theme — chrome stays white so the drawer + app bar look
+    // exactly as they did before themes existed (Aurora identity).
+    chromeSurface:       Colors.white,
+    chromeSurfaceMuted:  Color(0xFFF1F5F9), // slate-100
+    chromeOutline:       Color(0xFFE2E8F0), // slate-200
+    onChrome:            Color(0xFF0F172A), // slate-900
+    onChromeMuted:       Color(0xFF64748B), // slate-500
+    isDark:              false,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -330,6 +393,17 @@ class ThemePresets {
     onHeroMuted:        Color(0xCC0F172A),
     heroSurface:        Color(0x1F0F172A),
     heroSurfaceBorder:  Color(0x330F172A),
+    // Light pastel page-bg → dark text reads on it.
+    onPageBg:           Color(0xFF0F172A),
+    onPageBgMuted:      Color(0xFF64748B),
+    // Light theme — chrome stays white so the drawer + app bar look
+    // exactly as they did before themes existed (Aurora identity).
+    chromeSurface:       Colors.white,
+    chromeSurfaceMuted:  Color(0xFFF1F5F9), // slate-100
+    chromeOutline:       Color(0xFFE2E8F0), // slate-200
+    onChrome:            Color(0xFF0F172A), // slate-900
+    onChromeMuted:       Color(0xFF64748B), // slate-500
+    isDark:              false,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -371,6 +445,17 @@ class ThemePresets {
     onHeroMuted:        Color(0xCC0F172A),
     heroSurface:        Color(0x1F0F172A),
     heroSurfaceBorder:  Color(0x330F172A),
+    // Light pastel page-bg → dark text reads on it.
+    onPageBg:           Color(0xFF0F172A),
+    onPageBgMuted:      Color(0xFF64748B),
+    // Light theme — chrome stays white so the drawer + app bar look
+    // exactly as they did before themes existed (Aurora identity).
+    chromeSurface:       Colors.white,
+    chromeSurfaceMuted:  Color(0xFFF1F5F9), // slate-100
+    chromeOutline:       Color(0xFFE2E8F0), // slate-200
+    onChrome:            Color(0xFF0F172A), // slate-900
+    onChromeMuted:       Color(0xFF64748B), // slate-500
+    isDark:              false,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -415,6 +500,18 @@ class ThemePresets {
     onHeroMuted:        Color(0xE6FFFFFF),
     heroSurface:        Color(0x2EFFFFFF),
     heroSurfaceBorder:  Color(0x52FFFFFF),
+    // Dark page-bg → near-white text + soft slate-300 secondary.
+    onPageBg:           Color(0xFFF8FAFC),
+    onPageBgMuted:      Color(0xFFCBD5E1),
+    // Dark theme — chrome flips to deep slate so the drawer + app bar
+    // read as "dark mode" alongside the dark hero. SVG wordmark + all
+    // foreground text/icons switch to near-white via `onChrome`.
+    chromeSurface:       Color(0xFF0F172A), // slate-900
+    chromeSurfaceMuted:  Color(0xFF1E293B), // slate-800
+    chromeOutline:       Color(0xFF334155), // slate-700
+    onChrome:            Color(0xFFF8FAFC), // slate-50
+    onChromeMuted:       Color(0xFF94A3B8), // slate-400
+    isDark:              true,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -456,6 +553,18 @@ class ThemePresets {
     onHeroMuted:        Color(0xE6FFFFFF),
     heroSurface:        Color(0x2EFFFFFF),
     heroSurfaceBorder:  Color(0x52FFFFFF),
+    // Dark page-bg → near-white text + soft slate-300 secondary.
+    onPageBg:           Color(0xFFF8FAFC),
+    onPageBgMuted:      Color(0xFFCBD5E1),
+    // Dark theme — chrome flips to deep slate so the drawer + app bar
+    // read as "dark mode" alongside the dark hero. SVG wordmark + all
+    // foreground text/icons switch to near-white via `onChrome`.
+    chromeSurface:       Color(0xFF0F172A), // slate-900
+    chromeSurfaceMuted:  Color(0xFF1E293B), // slate-800
+    chromeOutline:       Color(0xFF334155), // slate-700
+    onChrome:            Color(0xFFF8FAFC), // slate-50
+    onChromeMuted:       Color(0xFF94A3B8), // slate-400
+    isDark:              true,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -499,6 +608,18 @@ class ThemePresets {
     onHeroMuted:        Color(0xE6FFFFFF),
     heroSurface:        Color(0x2EFFFFFF),
     heroSurfaceBorder:  Color(0x52FFFFFF),
+    // Dark page-bg → near-white text + soft slate-300 secondary.
+    onPageBg:           Color(0xFFF8FAFC),
+    onPageBgMuted:      Color(0xFFCBD5E1),
+    // Dark theme — chrome flips to deep slate so the drawer + app bar
+    // read as "dark mode" alongside the dark hero. SVG wordmark + all
+    // foreground text/icons switch to near-white via `onChrome`.
+    chromeSurface:       Color(0xFF0F172A), // slate-900
+    chromeSurfaceMuted:  Color(0xFF1E293B), // slate-800
+    chromeOutline:       Color(0xFF334155), // slate-700
+    onChrome:            Color(0xFFF8FAFC), // slate-50
+    onChromeMuted:       Color(0xFF94A3B8), // slate-400
+    isDark:              true,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -540,6 +661,18 @@ class ThemePresets {
     onHeroMuted:        Color(0xE6FFFFFF),
     heroSurface:        Color(0x2EFFFFFF),
     heroSurfaceBorder:  Color(0x52FFFFFF),
+    // Dark page-bg → near-white text + soft slate-300 secondary.
+    onPageBg:           Color(0xFFF8FAFC),
+    onPageBgMuted:      Color(0xFFCBD5E1),
+    // Dark theme — chrome flips to deep slate so the drawer + app bar
+    // read as "dark mode" alongside the dark hero. SVG wordmark + all
+    // foreground text/icons switch to near-white via `onChrome`.
+    chromeSurface:       Color(0xFF0F172A), // slate-900
+    chromeSurfaceMuted:  Color(0xFF1E293B), // slate-800
+    chromeOutline:       Color(0xFF334155), // slate-700
+    onChrome:            Color(0xFFF8FAFC), // slate-50
+    onChromeMuted:       Color(0xFF94A3B8), // slate-400
+    isDark:              true,
   );
 
   // ══════════════════════════════════════════════════════════════════
@@ -581,6 +714,18 @@ class ThemePresets {
     onHeroMuted:        Color(0xE6FFFFFF),
     heroSurface:        Color(0x2EFFFFFF),
     heroSurfaceBorder:  Color(0x52FFFFFF),
+    // Dark page-bg → near-white text + soft slate-300 secondary.
+    onPageBg:           Color(0xFFF8FAFC),
+    onPageBgMuted:      Color(0xFFCBD5E1),
+    // Dark theme — chrome flips to deep slate so the drawer + app bar
+    // read as "dark mode" alongside the dark hero. SVG wordmark + all
+    // foreground text/icons switch to near-white via `onChrome`.
+    chromeSurface:       Color(0xFF0F172A), // slate-900
+    chromeSurfaceMuted:  Color(0xFF1E293B), // slate-800
+    chromeOutline:       Color(0xFF334155), // slate-700
+    onChrome:            Color(0xFFF8FAFC), // slate-50
+    onChromeMuted:       Color(0xFF94A3B8), // slate-400
+    isDark:              true,
   );
 
   // ══════════════════════════════════════════════════════════════════

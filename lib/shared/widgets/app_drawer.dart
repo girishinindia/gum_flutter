@@ -54,8 +54,15 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Drawer chrome (body bg, dividers, row text + chevrons) all pull
+    // from the active palette so dark themes paint the entire drawer
+    // dark instead of leaving a white panel against the dark hero.
+    // Aurora + every other light theme set chromeSurface = white, so
+    // the existing look is preserved.
+    final palette = context.watch<ThemeController>().palette;
+
     return Drawer(
-      backgroundColor: AppColors.surface,
+      backgroundColor: palette.chromeSurface,
       elevation: 12,
       width: 312,
       shape: const RoundedRectangleBorder(
@@ -105,7 +112,7 @@ class AppDrawer extends StatelessWidget {
                 },
               ),
             ),
-            const Divider(height: 1, color: AppColors.outline),
+            Divider(height: 1, color: palette.chromeOutline),
             if (isLoggedIn)
               _SignOutButton(label: t.signOut, onTap: onSignOut),
           ],
@@ -254,6 +261,12 @@ class _DrawerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Row labels + chevron flip to near-white on dark chrome. The
+    // per-category icon colours (sky, accent, rose, etc.) stay as-is —
+    // they're visual category identifiers and read well on both
+    // light and dark surfaces.
+    final palette = context.watch<ThemeController>().palette;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -267,7 +280,11 @@ class _DrawerRow extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: action.iconColor.withValues(alpha: 0.10),
+                  // Slightly stronger tint on dark themes so the icon
+                  // chip still reads as a distinct surface.
+                  color: action.iconColor.withValues(
+                    alpha: palette.isDark ? 0.20 : 0.10,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(action.icon, color: action.iconColor, size: 19),
@@ -276,7 +293,10 @@ class _DrawerRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   action.label,
-                  style: AppTypography.h3.copyWith(fontSize: 14),
+                  style: AppTypography.h3.copyWith(
+                    fontSize: 14,
+                    color: palette.onChrome,
+                  ),
                 ),
               ),
               if (action.badgeCount != null && action.badgeCount! > 0)
@@ -304,8 +324,8 @@ class _DrawerRow extends StatelessWidget {
                   ),
                 ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.slate400, size: 18),
+              Icon(Icons.chevron_right_rounded,
+                  color: palette.onChromeMuted, size: 18),
             ],
           ),
         ),
@@ -365,7 +385,8 @@ class _LanguageRow extends StatelessWidget {
   Widget build(BuildContext context) {
     // Watch so the trailing "(native name)" updates immediately when the
     // user picks a new language inside the sheet.
-    final lang = context.watch<LanguageController>();
+    final lang     = context.watch<LanguageController>();
+    final palette  = context.watch<ThemeController>().palette;
     final trailing = lang.active.label;
 
     return Material(
@@ -387,7 +408,9 @@ class _LanguageRow extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.sky500.withValues(alpha: 0.10),
+                  color: AppColors.sky500.withValues(
+                    alpha: palette.isDark ? 0.20 : 0.10,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.language_rounded,
@@ -397,7 +420,10 @@ class _LanguageRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   t.language,
-                  style: AppTypography.h3.copyWith(fontSize: 14),
+                  style: AppTypography.h3.copyWith(
+                    fontSize: 14,
+                    color: palette.onChrome,
+                  ),
                 ),
               ),
               Text(
@@ -405,14 +431,14 @@ class _LanguageRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.caption.copyWith(
-                  color: AppColors.slate500,
+                  color: palette.onChromeMuted,
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.slate400, size: 18),
+              Icon(Icons.chevron_right_rounded,
+                  color: palette.onChromeMuted, size: 18),
             ],
           ),
         ),
@@ -454,7 +480,9 @@ class _ThemeRow extends StatelessWidget {
               Container(
                 width: 36, height: 36,
                 decoration: BoxDecoration(
-                  color: palette.primary500.withValues(alpha: 0.10),
+                  color: palette.primary500.withValues(
+                    alpha: palette.isDark ? 0.20 : 0.10,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(Icons.palette_rounded,
@@ -464,7 +492,10 @@ class _ThemeRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   t.theme,
-                  style: AppTypography.h3.copyWith(fontSize: 14),
+                  style: AppTypography.h3.copyWith(
+                    fontSize: 14,
+                    color: palette.onChrome,
+                  ),
                 ),
               ),
               // Mini gradient swatch — 16×16 disc with a soft outline.
@@ -492,14 +523,14 @@ class _ThemeRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.caption.copyWith(
-                  color: AppColors.slate500,
+                  color: palette.onChromeMuted,
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.slate400, size: 18),
+              Icon(Icons.chevron_right_rounded,
+                  color: palette.onChromeMuted, size: 18),
             ],
           ),
         ),

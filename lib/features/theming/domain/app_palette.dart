@@ -87,6 +87,55 @@ class AppPalette {
   /// surface tint so the chip has a visible edge.
   final Color heroSurfaceBorder;
 
+  // ── Foreground contrast on the page background ─────────────────────
+  //
+  // Anything painted directly onto the scaffold (NOT inside a white
+  // card) needs to flip colour on dark themes — section titles, empty
+  // states, etc. Cards themselves stay white and continue to use the
+  // static `AppColors.slate900` for internal text.
+  //
+  // For dark themes (`pageBgGradient` is dark) → near-white text.
+  // For light themes → slate-900 (the existing default).
+
+  /// Primary foreground colour over the page background (section
+  /// titles, "no items" placeholders).
+  final Color onPageBg;
+
+  /// Faded variant used for secondary copy directly on the page bg.
+  final Color onPageBgMuted;
+
+  // ── Chrome surfaces (drawer + app bar) ─────────────────────────────
+  //
+  // The two solid panels of "app shell": the end-drawer's body and
+  // the sticky `BrandSliverAppBar`. On light themes these stay white
+  // (so Aurora and every other light palette look exactly as they did
+  // before this token group existed). On dark themes they go deep
+  // slate so the chrome reads as "dark mode" alongside the dark hero.
+
+  /// Drawer + app-bar base background.
+  final Color chromeSurface;
+
+  /// Slight tint used for inset chips on the chrome (the language
+  /// pill / drawer-menu circle / "see all" pill bg variant).
+  final Color chromeSurfaceMuted;
+
+  /// Divider + soft outline colour on the chrome.
+  final Color chromeOutline;
+
+  /// Primary foreground (text + icons) on the chrome.
+  final Color onChrome;
+
+  /// Faded foreground for secondary text on the chrome (trailing
+  /// labels in drawer rows, sub-titles, chevron icons).
+  final Color onChromeMuted;
+
+  /// True for themes whose chrome surface is dark (Purple Haze,
+  /// Midnight Ocean, Obsidian, Ember, Royal Sapphire). Lets widgets
+  /// branch on luminance without re-deriving it from `onChrome` —
+  /// most importantly, the SVG wordmark needs a `Colors.white` tint
+  /// only when this is true (else the brand's original ink stays).
+  final bool isDark;
+
   const AppPalette({
     required this.id,
     required this.name,
@@ -104,5 +153,13 @@ class AppPalette {
     required this.onHeroMuted,
     required this.heroSurface,
     required this.heroSurfaceBorder,
+    required this.onPageBg,
+    required this.onPageBgMuted,
+    required this.chromeSurface,
+    required this.chromeSurfaceMuted,
+    required this.chromeOutline,
+    required this.onChrome,
+    required this.onChromeMuted,
+    required this.isDark,
   });
 }

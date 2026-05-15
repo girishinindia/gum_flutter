@@ -5,10 +5,13 @@
 // instructors, reviews).
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../theming/theme_controller.dart';
 
 class SectionHeader extends StatelessWidget {
   // Non-const so the default padding can be responsive per context.
@@ -39,6 +42,13 @@ class SectionHeader extends StatelessWidget {
           AppSpacing.headerToContentFor(context),
         );
 
+    // Title color follows the active theme's page-bg luminance — flips
+    // from slate-900 (light themes) to near-white (dark themes) so it
+    // stays readable when the scaffold is painted in Purple Haze /
+    // Obsidian / Ember etc. Eyebrow keeps its brand colour because the
+    // brand hues already contrast against both light and dark page bg.
+    final palette = context.watch<ThemeController>().palette;
+
     return Padding(
       padding: effectivePadding,
       child: Row(
@@ -49,7 +59,10 @@ class SectionHeader extends StatelessWidget {
             children: [
               Text(eyebrow, style: AppTypography.eyebrow),
               const SizedBox(height: AppSpacing.eyebrowToTitle),
-              Text(title,   style: AppTypography.h2),
+              Text(
+                title,
+                style: AppTypography.h2.copyWith(color: palette.onPageBg),
+              ),
             ],
           ),
           const Spacer(),

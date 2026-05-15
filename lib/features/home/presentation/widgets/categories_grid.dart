@@ -12,6 +12,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -20,6 +21,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../catalog/data/category_icon_styles.dart';
 import '../../../catalog/domain/sub_category.dart';
+import '../../../theming/theme_controller.dart';
 import '../../../i18n/messages.dart';
 
 class CategoriesGrid extends StatelessWidget {
@@ -61,6 +63,10 @@ class CategoriesGrid extends StatelessWidget {
         ? items.sublist(0, previewLimit!)
         : items;
 
+    // Title color flips to near-white on dark themes (Purple Haze /
+    // Obsidian / Ember / etc.) — see SectionHeader for the same logic.
+    final palette = context.watch<ThemeController>().palette;
+
     return Padding(
       // Top = responsive sectionTightFor (10 / 16 / 20 per breakpoint).
       // Categories sits directly under the aurora hero — tighter than
@@ -88,7 +94,10 @@ class CategoriesGrid extends StatelessWidget {
                   children: [
                     Text(t.exploreEyebrow, style: AppTypography.eyebrow),
                     const SizedBox(height: AppSpacing.eyebrowToTitle),
-                    Text(t.browseCategoriesTitle, style: AppTypography.h2),
+                    Text(
+                      t.browseCategoriesTitle,
+                      style: AppTypography.h2.copyWith(color: palette.onPageBg),
+                    ),
                   ],
                 ),
                 const Spacer(),

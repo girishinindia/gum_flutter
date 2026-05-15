@@ -47,13 +47,18 @@ class BrandSliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Themed brand gradient + glow tint for the graduation chip.
+    // Themed brand gradient + chrome colours. On dark themes the app
+    // bar background flips to deep slate (palette.chromeSurface), the
+    // SVG wordmark gets a white tint, and the menu/language pills
+    // switch their slate-100 bg + slate-700 ink to chrome muted +
+    // chrome ink. On Aurora and every other light theme these tokens
+    // are still white / slate-900 — so the bar looks identical.
     final palette = context.watch<ThemeController>().palette;
     return SliverAppBar(
       pinned: true,
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,           // M3: kill the auto tint
-      foregroundColor: AppColors.slate900,
+      backgroundColor: palette.chromeSurface,
+      surfaceTintColor: palette.chromeSurface, // M3: kill the auto tint
+      foregroundColor: palette.onChrome,
       elevation: 0,
       scrolledUnderElevation: 4,
       shadowColor: Colors.black.withValues(alpha: 0.06),
@@ -102,6 +107,13 @@ class BrandSliverAppBar extends StatelessWidget {
                 child: SvgPicture.asset(
                   AppAssets.brandLogoSvg,
                   height: 36,
+                  // Light themes → no filter (preserve original brand
+                  // ink so Aurora still reads as the painterly logo).
+                  // Dark themes → flatten the SVG to white so the dark
+                  // brand strokes don't disappear against dark chrome.
+                  colorFilter: palette.isDark
+                      ? const ColorFilter.mode(Colors.white, BlendMode.srcIn)
+                      : null,
                 ),
               ),
             ),
@@ -132,12 +144,12 @@ class BrandSliverAppBar extends StatelessWidget {
                     radius: 24,
                     child: Container(
                       width: 42, height: 42,
-                      decoration: const BoxDecoration(
-                        color: AppColors.slate100,
+                      decoration: BoxDecoration(
+                        color: palette.chromeSurfaceMuted,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.menu_rounded,
-                          color: AppColors.slate700, size: 22),
+                      child: Icon(Icons.menu_rounded,
+                          color: palette.onChrome, size: 22),
                     ),
                   ),
                   if (showNotificationDot)
@@ -148,7 +160,12 @@ class BrandSliverAppBar extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppColors.amber,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
+                          // Border matches chrome bg so the dot looks
+                          // "cut out" of the menu circle on either light
+                          // or dark themes.
+                          border: Border.all(
+                            color: palette.chromeSurface, width: 1.5,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.amber.withValues(alpha: 0.6),
@@ -381,16 +398,18 @@ class _LanguagePillButton extends StatelessWidget {
           radius: 24,
           child: Container(
             width: 42, height: 42,
-            decoration: const BoxDecoration(
-              color: AppColors.slate100,
+            decoration: BoxDecoration(
+              color: palette.chromeSurfaceMuted,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.language_rounded,
-                color: AppColors.slate700, size: 22),
+            child: Icon(Icons.language_rounded,
+                color: palette.onChrome, size: 22),
           ),
         ),
         // Brand-tinted dot — tiny "live" indicator so the icon doesn't
         // feel inert next to the drawer's pulsing amber notification.
+        // Its border matches chrome bg so it appears "cut out" on
+        // either light or dark themes.
         Positioned(
           bottom: -1, right: -1,
           child: Container(
@@ -398,7 +417,7 @@ class _LanguagePillButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: palette.primary500,
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.5),
+              border: Border.all(color: palette.chromeSurface, width: 1.5),
             ),
           ),
         ),
