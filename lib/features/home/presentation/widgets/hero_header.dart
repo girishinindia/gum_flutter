@@ -59,7 +59,10 @@ class BrandSliverAppBar extends StatelessWidget {
       shadowColor: Colors.black.withValues(alpha: 0.06),
       automaticallyImplyLeading: false,
       toolbarHeight: 68,
-      titleSpacing: 16,
+      // Tighter on narrow phones so the title row leaves enough room
+      // for two right-side action buttons without clipping. 12 px on
+      // most devices, 16 only on tablets.
+      titleSpacing: 12,
       title: Row(
         children: [
           // Graduation chip — brand-gradient square that visually
@@ -81,12 +84,27 @@ class BrandSliverAppBar extends StatelessWidget {
             child: const Icon(Icons.school_rounded, color: Colors.white, size: 22),
           ),
           const SizedBox(width: 10),
-          // GM wordmark — same SVG as desktop / mobile-web, rendered
-          // in its ORIGINAL colours (no colorFilter). Bumped to 36 px
-          // so the wordmark visually balances the 42 px chip beside it.
-          SvgPicture.asset(
-            AppAssets.brandLogoSvg,
-            height: 36,
+          // GM wordmark — Expanded gives the SVG exactly the leftover
+          // space after the 42-px chip on the left and the two action
+          // buttons on the right have claimed theirs. FittedBox then
+          // scales the SVG down (never up) so the wide "Don't just
+          // learn, apply!" tagline never overflows on narrow Android
+          // devices (Realme C3, Pixel 4a, Galaxy S20 FE etc.).
+          //
+          // ClipRect is belt-and-braces — even if a single frame is
+          // measured before FittedBox computes scale, the paint stays
+          // inside bounds so Flutter's debug overflow stripe is gone.
+          Expanded(
+            child: ClipRect(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: SvgPicture.asset(
+                  AppAssets.brandLogoSvg,
+                  height: 36,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -326,57 +344,65 @@ class _GlassSearch extends StatelessWidget {
   }
 }
 
-// ─── Language pill — opens the LanguageSheet on tap ───────────────────
+// ─── Language icon — opens the LanguageSheet on tap ──────────────────
 //
-// Mirrors the mobile-web `MobileLanguagePopup` trigger: small circular
-// pill with the globe icon + the active ISO code so the user can see
-// what's currently picked at a glance ("EN", "हि", "DE", …). Tap → open
-// the same modal sheet that's shown from the drawer "Language" row.
+// Compact 42 × 42 circle (matches the drawer button's footprint) so the
+// app-bar action cluster stays within the viewport even on narrow
+// Android devices where the wordmark + tagline take most of the width.
+//
+// The active ISO is intentionally NOT shown here — it'd push the chip
+// to ~60 px and clip on tight phones. The sheet itself, plus the drawer
+// "Language" row, both surface the active language. This trigger is
+// purely an entry point.
+//
+// A tiny brand-coloured dot in the bottom-right confirms the button is
+// active / "live" (matches the notification dot pattern on the drawer
+// button so the two reads symmetrically).
 class _LanguagePillButton extends StatelessWidget {
   const _LanguagePillButton();
 
   @override
   Widget build(BuildContext context) {
-    // Watch the language controller so the ISO badge updates the moment
-    // the user picks a new language inside the sheet.
-    final lang = context.watch<LanguageController>();
-    final iso  = lang.iso.toUpperCase();
+    // Watch so the indicator dot retints with the active theme.
+    final palette = context.watch<ThemeController>().palette;
+    // Read (not watch) the language controller — the icon shape doesn't
+    // depend on the active iso, only on the theme. No rebuilds needed
+    // when the user switches language.
+    context.read<LanguageController>();
 
-    return InkResponse(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        LanguageSheet.show(context);
-      },
-      radius: 24,
-      child: Container(
-        height: 42,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: const BoxDecoration(
-          color: AppColors.slate100,
-          // Pill shape — distinct from the drawer's circle, so the two
-          // buttons read as separate affordances even at a glance.
-          borderRadius: BorderRadius.all(Radius.circular(21)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.language_rounded,
-                color: AppColors.slate700, size: 18),
-            const SizedBox(width: 4),
-            // Active ISO — keeps the chip useful as a status indicator
-            // (e.g. shows "हि" when Hindi is active, "EN" for English).
-            Text(
-              iso,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: AppColors.slate700,
-                letterSpacing: 0.4,
-              ),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        InkResponse(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            LanguageSheet.show(context);
+          },
+          radius: 24,
+          child: Container(
+            width: 42, height: 42,
+            decoration: const BoxDecoration(
+              color: AppColors.slate100,
+              shape: BoxShape.circle,
             ),
-          ],
+            child: const Icon(Icons.language_rounded,
+                color: AppColors.slate700, size: 22),
+          ),
         ),
-      ),
+        // Brand-tinted dot — tiny "live" indicator so the icon doesn't
+        // feel inert next to the drawer's pulsing amber notification.
+        Positioned(
+          bottom: -1, right: -1,
+          child: Container(
+            width: 9, height: 9,
+            decoration: BoxDecoration(
+              color: palette.primary500,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

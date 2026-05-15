@@ -1,17 +1,31 @@
-// Theme presets — 8 pre-baked AppPalette instances.
+// Theme presets — 13 pre-baked AppPalette instances.
 //
-//   1. aurora        (DEFAULT — current sky → cyan → indigo → violet)
-//   2. cyan-lavender (soft cyan + pastel violet)
-//   3. sunshine      (warm yellow + amber)
-//   4. champagne     (beige + rose + peach)
-//   5. aqua-mint     (cyan → teal → mint)
-//   6. ocean         (deep blue + sky)
-//   7. spring        (lemon + lime + mint)
-//   8. peach-rose    (pink + rose + peach)
+// LIGHT (cards + page already read against light text):
+//   1. aurora         (DEFAULT — sky → cyan → indigo → violet)
+//   2. cyan-lavender  (soft cyan + pastel violet)
+//   3. sunshine       (warm yellow + amber)
+//   4. champagne      (beige + rose + peach)
+//   5. aqua-mint      (cyan → teal → mint)
+//   6. ocean          (deep blue + sky)
+//   7. spring         (lemon + lime + mint)
+//   8. peach-rose     (pink + rose + peach)
+//
+// DARK (hero + bottom-nav + page bg all dark — cards stay white and
+//       pop as elevated surfaces, à la iOS/Android dark mode):
+//   9. purple-haze     (navy + violet glow)
+//  10. midnight-ocean  (deep textured navy)
+//  11. obsidian        (pure black + electric sky accent)
+//  12. ember           (black + warm rose / rust)
+//  13. royal-sapphire  (deep blue with sparkle highlights)
 //
 // Each palette overrides only the visible gradients and brand seed.
 // Slate / outline / surface / semantic colours are inherited from
 // AppColors (never themed — they're neutrals).
+//
+// `onHero` follows the hero gradient luminance: white on dark themes
+// (1, 6, 9–13), slate-900 on light themes (2–5, 7, 8). This keeps
+// search-field placeholder, drawer header, splash tagline & stats
+// readable regardless of the active palette.
 
 import 'package:flutter/material.dart';
 import '../domain/app_palette.dart';
@@ -360,11 +374,224 @@ class ThemePresets {
   );
 
   // ══════════════════════════════════════════════════════════════════
+  // 9. PURPLE HAZE — navy → violet (dark)
+  // ══════════════════════════════════════════════════════════════════
+
+  static const AppPalette purpleHaze = AppPalette(
+    id:      'purple-haze',
+    name:    'Purple Haze',
+    tagline: 'navy + violet glow',
+    heroGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF000814), Color(0xFF0F0820), Color(0xFF2D1B69), Color(0xFF7E22CE)],
+      stops:  [0.0, 0.35, 0.75, 1.0],
+    ),
+    brandGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF7C3AED), Color(0xFFA855F7)],
+    ),
+    bottomNavGradient: LinearGradient(
+      begin: _horizStart, end: _horizEnd,
+      colors: [Color(0xFF000814), Color(0xFF1E1B4B), Color(0xFF4338CA), Color(0xFF7C3AED)],
+      stops:  [0.0, 0.35, 0.7, 1.0],
+    ),
+    pageBgGradient: LinearGradient(
+      begin: _vertStart, end: _vertEnd,
+      colors: [Color(0xFF0A0A0F), Color(0xFF1A0F2E), Color(0xFF0F0820)],
+      stops:  [0.0, 0.5, 1.0],
+    ),
+    featureGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF9333EA), Color(0xFF6366F1), Color(0xFF2563EB)],
+    ),
+    // Brand scale stays light-pastel-on-white so "See all" / badge pills
+    // still read on the (still-white) card surfaces inside the home.
+    primary500: Color(0xFF8B5CF6),
+    primary700: Color(0xFF6D28D9),
+    primary50:  Color(0xFFF5F3FF),
+    primary200: Color(0xFFDDD6FE),
+    // Hero is dark → white text + white-tinted glass surface.
+    onHero:             Colors.white,
+    onHeroMuted:        Color(0xE6FFFFFF),
+    heroSurface:        Color(0x2EFFFFFF),
+    heroSurfaceBorder:  Color(0x52FFFFFF),
+  );
+
+  // ══════════════════════════════════════════════════════════════════
+  // 10. MIDNIGHT OCEAN — deep textured navy (dark)
+  // ══════════════════════════════════════════════════════════════════
+
+  static const AppPalette midnightOcean = AppPalette(
+    id:      'midnight-ocean',
+    name:    'Midnight Ocean',
+    tagline: 'deep textured navy',
+    heroGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF020617), Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF1E40AF)],
+      stops:  [0.0, 0.35, 0.75, 1.0],
+    ),
+    brandGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+    ),
+    bottomNavGradient: LinearGradient(
+      begin: _horizStart, end: _horizEnd,
+      colors: [Color(0xFF020617), Color(0xFF0C1E4A), Color(0xFF1E3A8A), Color(0xFF1E40AF)],
+      stops:  [0.0, 0.35, 0.7, 1.0],
+    ),
+    pageBgGradient: LinearGradient(
+      begin: _vertStart, end: _vertEnd,
+      colors: [Color(0xFF0A0F1A), Color(0xFF0F172A), Color(0xFF1E293B)],
+      stops:  [0.0, 0.5, 1.0],
+    ),
+    featureGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF1E40AF), Color(0xFF2563EB), Color(0xFF3B82F6)],
+    ),
+    primary500: Color(0xFF2563EB),
+    primary700: Color(0xFF1D4ED8),
+    primary50:  Color(0xFFEFF6FF),
+    primary200: Color(0xFFBFDBFE),
+    onHero:             Colors.white,
+    onHeroMuted:        Color(0xE6FFFFFF),
+    heroSurface:        Color(0x2EFFFFFF),
+    heroSurfaceBorder:  Color(0x52FFFFFF),
+  );
+
+  // ══════════════════════════════════════════════════════════════════
+  // 11. OBSIDIAN — pure black + electric sky accent (dark)
+  // ══════════════════════════════════════════════════════════════════
+
+  static const AppPalette obsidian = AppPalette(
+    id:      'obsidian',
+    name:    'Obsidian',
+    tagline: 'pure black + electric',
+    heroGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF000000), Color(0xFF0A0A0F), Color(0xFF18181B), Color(0xFF27272A)],
+      stops:  [0.0, 0.4, 0.8, 1.0],
+    ),
+    brandGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      // Electric sky → indigo so the FAB/buttons POP against the
+      // otherwise neutral charcoal hero (without it the brand reads inert).
+      colors: [Color(0xFF0EA5E9), Color(0xFF6366F1)],
+    ),
+    bottomNavGradient: LinearGradient(
+      begin: _horizStart, end: _horizEnd,
+      colors: [Color(0xFF000000), Color(0xFF18181B), Color(0xFF27272A), Color(0xFF3F3F46)],
+      stops:  [0.0, 0.35, 0.7, 1.0],
+    ),
+    pageBgGradient: LinearGradient(
+      begin: _vertStart, end: _vertEnd,
+      colors: [Color(0xFF0A0A0F), Color(0xFF18181B), Color(0xFF0F172A)],
+      stops:  [0.0, 0.5, 1.0],
+    ),
+    featureGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF18181B), Color(0xFF1E3A8A), Color(0xFF0EA5E9)],
+    ),
+    primary500: Color(0xFF0EA5E9),
+    primary700: Color(0xFF0369A1),
+    primary50:  Color(0xFFF0F9FF),
+    primary200: Color(0xFFBAE6FD),
+    onHero:             Colors.white,
+    onHeroMuted:        Color(0xE6FFFFFF),
+    heroSurface:        Color(0x2EFFFFFF),
+    heroSurfaceBorder:  Color(0x52FFFFFF),
+  );
+
+  // ══════════════════════════════════════════════════════════════════
+  // 12. EMBER — black + warm rose / rust (dark)
+  // ══════════════════════════════════════════════════════════════════
+
+  static const AppPalette ember = AppPalette(
+    id:      'ember',
+    name:    'Ember',
+    tagline: 'black + warm rose',
+    heroGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF0F0606), Color(0xFF1F0A0A), Color(0xFF7F1D1D), Color(0xFF9F1239)],
+      stops:  [0.0, 0.35, 0.75, 1.0],
+    ),
+    brandGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFFDC2626), Color(0xFFE11D48)],
+    ),
+    bottomNavGradient: LinearGradient(
+      begin: _horizStart, end: _horizEnd,
+      colors: [Color(0xFF0F0606), Color(0xFF450A0A), Color(0xFF7F1D1D), Color(0xFFDC2626)],
+      stops:  [0.0, 0.35, 0.7, 1.0],
+    ),
+    pageBgGradient: LinearGradient(
+      begin: _vertStart, end: _vertEnd,
+      colors: [Color(0xFF1A0F0F), Color(0xFF1F1414), Color(0xFF0F0606)],
+      stops:  [0.0, 0.5, 1.0],
+    ),
+    featureGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF9F1239), Color(0xFFDC2626), Color(0xFFF87171)],
+    ),
+    primary500: Color(0xFFDC2626),
+    primary700: Color(0xFF991B1B),
+    primary50:  Color(0xFFFEF2F2),
+    primary200: Color(0xFFFECACA),
+    onHero:             Colors.white,
+    onHeroMuted:        Color(0xE6FFFFFF),
+    heroSurface:        Color(0x2EFFFFFF),
+    heroSurfaceBorder:  Color(0x52FFFFFF),
+  );
+
+  // ══════════════════════════════════════════════════════════════════
+  // 13. ROYAL SAPPHIRE — deep blue with sparkle highlights (dark)
+  // ══════════════════════════════════════════════════════════════════
+
+  static const AppPalette royalSapphire = AppPalette(
+    id:      'royal-sapphire',
+    name:    'Royal Sapphire',
+    tagline: 'deep blue + sparkle',
+    heroGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF020617), Color(0xFF0C1E4A), Color(0xFF1E40AF), Color(0xFF3B82F6)],
+      stops:  [0.0, 0.3, 0.7, 1.0],
+    ),
+    brandGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+    ),
+    bottomNavGradient: LinearGradient(
+      begin: _horizStart, end: _horizEnd,
+      colors: [Color(0xFF020617), Color(0xFF1E3A8A), Color(0xFF2563EB), Color(0xFF60A5FA)],
+      stops:  [0.0, 0.35, 0.7, 1.0],
+    ),
+    pageBgGradient: LinearGradient(
+      begin: _vertStart, end: _vertEnd,
+      colors: [Color(0xFF0A1428), Color(0xFF102444), Color(0xFF0F1B33)],
+      stops:  [0.0, 0.5, 1.0],
+    ),
+    featureGradient: LinearGradient(
+      begin: _diag, end: _diagEnd,
+      colors: [Color(0xFF1E3A8A), Color(0xFF2563EB), Color(0xFF60A5FA)],
+    ),
+    primary500: Color(0xFF3B82F6),
+    primary700: Color(0xFF1D4ED8),
+    primary50:  Color(0xFFEFF6FF),
+    primary200: Color(0xFFBFDBFE),
+    onHero:             Colors.white,
+    onHeroMuted:        Color(0xE6FFFFFF),
+    heroSurface:        Color(0x2EFFFFFF),
+    heroSurfaceBorder:  Color(0x52FFFFFF),
+  );
+
+  // ══════════════════════════════════════════════════════════════════
   // Registry
   // ══════════════════════════════════════════════════════════════════
 
-  /// All themes in picker order. Aurora is first (= default).
+  /// All themes in picker order. Aurora is first (= default). Lights
+  /// come before darks so the picker reads as a natural light → dark
+  /// spectrum from top-left to bottom-right.
   static const List<AppPalette> all = [
+    // Light
     aurora,
     cyanLavender,
     sunshine,
@@ -373,6 +600,12 @@ class ThemePresets {
     ocean,
     spring,
     peachRose,
+    // Dark
+    purpleHaze,
+    midnightOcean,
+    obsidian,
+    ember,
+    royalSapphire,
   ];
 
   /// Look up a palette by its persisted id. Unknown ids fall back to
