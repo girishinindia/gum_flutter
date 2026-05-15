@@ -10,8 +10,15 @@ import 'package:flutter/services.dart';
 import 'core/theme/app_theme.dart';
 import 'features/splash/presentation/splash_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Lock the app to portrait orientation only. The home is designed
+  // for vertical scrolling and the carousels / sticky app bar don't
+  // need landscape — locking here is cleaner than handling rotation.
+  await SystemChrome.setPreferredOrientations(const [
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   SystemChrome.setSystemUIOverlayStyle(AppTheme.systemUiLight);
   runApp(const GrowUpMoreApp());
 }
