@@ -151,6 +151,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     offset: const Offset(0, -100),
                     child: Column(
                       children: [
+                        // 16 px spacer that lifts the visible
+                        // Featured → Popular Courses gap to a clean
+                        // 30 px (compensates for the FeaturedCard's
+                        // 16 px internal bottom padding being
+                        // absorbed by the section header padding).
+                        const SizedBox(height: 16),
                         OffersCarousel(courses: courses),
                         WebinarsSection(items: _repo.upcomingWebinars()),
                         BundlesSection(items: _repo.courseBundles()),

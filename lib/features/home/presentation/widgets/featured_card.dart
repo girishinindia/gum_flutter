@@ -50,7 +50,7 @@ class FeaturedCard extends StatelessWidget {
         AppSpacing.pageGutter, 0,
       ),
       child: Transform.translate(
-        offset: const Offset(0, -90),
+        offset: const Offset(0, -80),
         child: Material(
         color: Colors.transparent,
         child: InkWell(

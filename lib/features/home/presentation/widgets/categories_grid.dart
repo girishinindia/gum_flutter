@@ -76,7 +76,7 @@ class CategoriesGrid extends StatelessWidget {
           // shaves off enough line-leading to look tight without
           // ever crossing into overlap territory.
           Transform.translate(
-            offset: const Offset(0, -30),
+            offset: const Offset(0, -20),
             child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
