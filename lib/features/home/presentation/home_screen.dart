@@ -135,31 +135,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 5️⃣  Popular courses
-                SliverToBoxAdapter(child: OffersCarousel(courses: courses)),
-
-                // 6️⃣  Upcoming webinars
+                // 5️⃣..9️⃣  All sections BELOW the FeaturedCard, wrapped
+                // in a single Transform.translate(-100) that matches the
+                // FeaturedCard's own -100 internal pull-up. Why?
+                //
+                // The FeaturedCard renders 100 px ABOVE its layout slot
+                // (Transform.translate moves pixels, not layout). So if
+                // these next sections stay at their natural layout
+                // positions, a 100 px "ghost gap" opens up between the
+                // FeaturedCard's visible bottom and the OffersCarousel's
+                // header above. Pulling them up by the same amount keeps
+                // the entire bottom stack visually tight.
                 SliverToBoxAdapter(
-                  child: WebinarsSection(items: _repo.upcomingWebinars()),
-                ),
-
-                // 7️⃣  Course bundles
-                SliverToBoxAdapter(
-                  child: BundlesSection(items: _repo.courseBundles()),
-                ),
-
-                // 8️⃣  Top instructors
-                SliverToBoxAdapter(
-                  child: InstructorsSection(items: _repo.topInstructors()),
-                ),
-
-                // 9️⃣  Student reviews
-                SliverToBoxAdapter(
-                  child: ReviewsSection(items: _repo.studentReviews()),
+                  child: Transform.translate(
+                    offset: const Offset(0, -100),
+                    child: Column(
+                      children: [
+                        OffersCarousel(courses: courses),
+                        WebinarsSection(items: _repo.upcomingWebinars()),
+                        BundlesSection(items: _repo.courseBundles()),
+                        InstructorsSection(items: _repo.topInstructors()),
+                        ReviewsSection(items: _repo.studentReviews()),
+                      ],
+                    ),
+                  ),
                 ),
 
                 // Trailing space so the BNB doesn't cover content.
-                const SliverToBoxAdapter(child: SizedBox(height: 120)),
+                // Reduced 120 → 20 because the lifted Column above is
+                // already pulled 100 px upward (Transform.translate),
+                // which leaves a 100 px "phantom" layout slot below it.
+                // 20 px is the minimum safety clearance from the curved
+                // nav + FAB (which together block ~90 px from screen
+                // bottom — extendBody is on, so this trailing prevents
+                // the last visible review card from being clipped).
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
               ],
             ),
           ],

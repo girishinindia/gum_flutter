@@ -41,14 +41,18 @@ class FeaturedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      // Top = AppSpacing.section (30) — inter-section gap.
-      // Sides = AppSpacing.pageGutter (16). Bottom = 0.
+      // Sides = AppSpacing.pageGutter (16). Top/bottom = 0 — the
+      // Transform.translate below physically pulls the card UP into
+      // the residual tile-buffer + h2-leading space left by the
+      // categories grid above. Same trick as CategoriesGrid's grid.
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.pageGutter, AppSpacing.section,
+        AppSpacing.pageGutter, 0,
         AppSpacing.pageGutter, 0,
       ),
-      child: Material(
-        color: Colors.transparent,
+      child: Transform.translate(
+        offset: const Offset(0, -100),
+        child: Material(
+          color: Colors.transparent,
         child: InkWell(
           onTap: () {
             HapticFeedback.lightImpact();
@@ -202,6 +206,7 @@ class FeaturedCard extends StatelessWidget {
           ),
         ),
       ),
+    ),
     ).animate().fadeIn(duration: 500.ms, delay: 200.ms);
   }
 }

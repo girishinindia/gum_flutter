@@ -36,7 +36,7 @@ class CategoriesGrid extends StatelessWidget {
       // TIGHT spacing tokens so it nestles against the gradient
       // instead of leaving a big dead band.
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.pageGutter, AppSpacing.sectionTight,
+        AppSpacing.pageGutter, 20,
         AppSpacing.pageGutter, 0,
       ),
       child: Column(
@@ -47,7 +47,8 @@ class CategoriesGrid extends StatelessWidget {
           // close to the tiles below them.
           Padding(
             padding: const EdgeInsets.only(
-              bottom: AppSpacing.headerToContentTight,
+              bottom: 0,
+              top: 0
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -69,31 +70,41 @@ class CategoriesGrid extends StatelessWidget {
           // ── 4-col grid ────────────────────────────────────────────
           // Both axes use AppSpacing.tileGap (12) for visual uniformity
           // with the carousel `cardGap` standard.
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing:  AppSpacing.tileGap,
-              crossAxisSpacing: AppSpacing.tileGap,
-              // 96 = ~92 px content + 2 top + 2 bottom buffer.
-              mainAxisExtent: 96,
+          //
+          // Transform.translate physically pulls the grid UP by 16 px
+          // to close the residual gap left by the h2 line-leading
+          // (~5 px) + tile-centering buffer (~2 px) + whatever the
+          // .animate() stagger leaves behind. Layout slot is preserved;
+          // only pixels move, so nothing else on the page shifts.
+          // Tweak the offset if visually too tight/loose.
+          Transform.translate(
+            offset: const Offset(0, -40),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing:  AppSpacing.tileGap,
+                crossAxisSpacing: AppSpacing.tileGap,
+                // 96 = ~92 px content + 2 top + 2 bottom buffer.
+                mainAxisExtent: 96,
+              ),
+              itemBuilder: (context, i) {
+                final item = items[i];
+                return _CategoryTile(
+                  item: item,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onItemTap?.call(item);
+                  },
+                // No slideY — the 12% downward translate was adding
+                // ~11 px of perceived empty space above each tile while
+                // the entry stagger played out, which read as extra
+                // header-to-tile gap. Plain fadeIn keeps it crisp.
+                ).animate(delay: (60 * i).ms).fadeIn(duration: 380.ms);
+              },
             ),
-            itemBuilder: (context, i) {
-              final item = items[i];
-              return _CategoryTile(
-                item: item,
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  onItemTap?.call(item);
-                },
-              // No slideY — the 12% downward translate was adding
-              // ~11 px of perceived empty space above each tile while
-              // the entry stagger played out, which read as extra
-              // header-to-tile gap. Plain fadeIn keeps it crisp.
-              ).animate(delay: (60 * i).ms).fadeIn(duration: 380.ms);
-            },
           ),
         ],
       ),
