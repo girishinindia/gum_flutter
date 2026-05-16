@@ -415,7 +415,13 @@ class _ProjectFormScreenState extends State<_ProjectFormScreen> {
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Ongoing'),
                   value: _isOngoing,
-                  onChanged: (v) => setState(() => _isOngoing = v),
+                  onChanged: (v) => setState(() {
+                    _isOngoing = v;
+                    // Phase 38.1 — clear end-date when toggling ON so a
+                    // later submit cannot ship a stale value. Mirrors
+                    // the education form + server invariant + DB CHECK.
+                    if (v) _endCtl.text = '';
+                  }),
                 ),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(

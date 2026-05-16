@@ -1,4 +1,76 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Phase 40.1 — Permissions catalogue.
+         Each permission below is paired with the in-app feature that
+         uses it. Trim unused entries before submitting to Google Play —
+         each permission needs a privacy-policy disclosure and SMS/Call
+         Log access in particular requires a special declaration form.
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Network — always required (Dio/API calls, image loading). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- Camera — profile photo + education / document scan upload. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <!-- Storage / Gallery — image_picker (gallery) + file_picker (PDF).
+         Android 13+ uses scoped READ_MEDIA_* permissions; older versions
+         still ask for READ_EXTERNAL_STORAGE. The image_picker plugin
+         falls back automatically per platform version. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="29" />
+
+    <!-- Location — address auto-fill (future), nearest-branch lookups,
+         analytics geo-targeting. Background location is intentionally
+         NOT requested (would require additional Play Store review). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Contacts — emergency-contact picker on profile + future "invite
+         a friend" share sheet. Two flavours: read for picking, write for
+         "Save GUM support to contacts" (optional). -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+
+    <!-- SMS — OTP auto-read placeholder.
+         Currently NOT wired in the app (Phase 41 was reverted). Kept
+         declared so a future implementation can read the OTP SMS
+         without re-touching the manifest. NOTE for release builds:
+         any code path that actually triggers RECEIVE_SMS / READ_SMS
+         pulls in Google Play's permission declaration form. Remove
+         these two lines before submitting if not in use. -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+
+    <!-- Telephony — mobile-number prefill on signup. -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
+
+    <!-- Notifications — push for new messages, live class start, payout
+         events. POST_NOTIFICATIONS is the Android 13+ runtime permission. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Microphone — voice messages in chat (Phase 11.2 push module) and
+         future live-class participation. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Biometric login — Face ID / Fingerprint shortcut on supported
+         devices. Safe to keep; doesn't show in Play Store listing. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
     <application
         android:label="growupmore"
         android:name="${applicationName}"
@@ -31,6 +103,15 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Phase 39.2 — image_cropper's uCrop activity.
+             Must be registered explicitly per the plugin README so the
+             system can launch the crop UI. The theme is bundled by the
+             AndroidX libraries that uCrop pulls in. -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

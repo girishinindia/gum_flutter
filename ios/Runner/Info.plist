@@ -4,6 +4,68 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+
+	<!-- ════════════════════════════════════════════════════════════════
+	     Phase 40.1 — iOS permission purpose strings.
+	     iOS REQUIRES every privacy-sensitive permission to declare why
+	     the app wants access. Missing a key = app crashes the moment the
+	     plugin asks for it. Keep these copy strings honest and concise —
+	     App Store review will reject vague wording.
+	     ════════════════════════════════════════════════════════════════ -->
+
+	<!-- Photo library + camera — profile photo, education certificates,
+	     identity documents. -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow Grow Up More to pick a profile photo, certificate, or document from your library.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allow Grow Up More to save edited photos back to your library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow Grow Up More to use the camera for your profile photo, certificates, or document scans.</string>
+
+	<!-- Microphone — voice messages in chat, live-class participation. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Allow Grow Up More to record voice messages and participate in live classes.</string>
+
+	<!-- Location — address auto-fill, nearest-branch lookup. We only ask
+	     for WhenInUse — no background tracking. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Allow Grow Up More to use your location to auto-fill your address and find nearby branches.</string>
+
+	<!-- Contacts — emergency-contact picker on profile + invite-a-friend
+	     flow. We only ask for read access; the app never modifies contacts. -->
+	<key>NSContactsUsageDescription</key>
+	<string>Allow Grow Up More to pick a contact as your emergency contact, or to invite friends to the platform.</string>
+
+	<!-- Calendar — sync upcoming live classes / batch schedules to the
+	     user's calendar (Phase 40+ planned feature). -->
+	<key>NSCalendarsUsageDescription</key>
+	<string>Allow Grow Up More to add your upcoming live classes and batches to your calendar.</string>
+
+	<!-- Reminders — optional follow-up nudges. Safe to leave even if
+	     unused; iOS only prompts when an API call requires it. -->
+	<key>NSRemindersUsageDescription</key>
+	<string>Allow Grow Up More to set learning-streak reminders.</string>
+
+	<!-- Face ID — biometric login shortcut. Required even if you only
+	     use LocalAuthentication's "biometric or passcode" flow. -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Allow Grow Up More to sign you in with Face ID.</string>
+
+	<!-- App-transport-security — allow plain HTTP only in dev so the
+	     LAN-IP setup (http://192.168.1.x:5001) works on real devices.
+	     Production builds should remove this and rely on HTTPS via
+	     Cloudflare Tunnel or the real domain. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+
+	<!-- Local network — required for Bonjour discovery + LAN API access
+	     on iOS 14+. Without this, http://192.168.1.x requests silently
+	     hang on first attempt and pop a confusing prompt later. -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Grow Up More needs local network access to talk to the dev API during testing.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

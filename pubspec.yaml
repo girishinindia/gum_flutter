@@ -62,6 +62,34 @@ dependencies:
   image_picker:           ^1.1.2
   file_picker:            ^8.1.4
 
+  # Phase 39.2 — image editing.
+  #
+  # `image_cropper` gives a NATIVE crop UI on Android (uCrop) and iOS
+  # (TOCropViewController) — locked aspect ratio, rotation, free-rotate,
+  # output resize. Comes with full keyboard-control + accessibility.
+  #
+  # `image` is the pure-Dart pixel-level image processing library; we use
+  # it for the in-app filter screen (brightness / contrast / saturation /
+  # grayscale / sepia presets) once the user is done cropping. It's the
+  # same engine that powers most of the image_cropper plugins under the
+  # hood, so adding it as a direct dep is essentially free.
+  image_cropper:          ^8.0.2
+  image:                  ^4.3.0
+
+  # Phase 40.1 — runtime permission requests.
+  #
+  # Both Android (post-23) and iOS require the app to *prompt* the user
+  # for sensitive permissions at the moment they're needed — declaring
+  # them in the manifest/plist is necessary but not sufficient. This
+  # package gives a uniform Dart API (`Permission.camera.request()`,
+  # `Permission.contacts.request()`, etc) across both platforms.
+  #
+  # We use it inside `core/permissions/app_permissions.dart` rather than
+  # scattering raw `Permission.foo.request()` calls everywhere — that
+  # central wrapper handles the "permanently denied → open settings"
+  # fallback that's required to get the request UX right.
+  permission_handler:     ^11.3.1
+
   # MediaType helper for setting the multipart Content-Type on uploads.
   # Available transitively via dio but declared explicitly here to
   # satisfy `depend_on_referenced_packages` and survive dio bumps.

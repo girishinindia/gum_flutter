@@ -494,7 +494,11 @@ class _ExperienceFormScreenState extends State<_ExperienceFormScreen> {
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Currently working here'),
                   value: _isCurrentJob,
-                  onChanged: (v) => setState(() => _isCurrentJob = v),
+                  onChanged: (v) => setState(() {
+                    _isCurrentJob = v;
+                    // Phase 38.1 — clear end-date on toggle ON.
+                    if (v) _endCtl.text = '';
+                  }),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(

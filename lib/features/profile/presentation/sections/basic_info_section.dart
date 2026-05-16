@@ -19,10 +19,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/network/api_error.dart';
+import '../../../../core/permissions/app_permissions.dart';
 import '../../../../core/validation/form_validators.dart';
 import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../../auth/bloc/auth_bloc.dart';
@@ -31,6 +33,7 @@ import '../../bloc/profile_bloc.dart';
 import '../../bloc/profile_event.dart';
 import '../../bloc/profile_state.dart';
 import '../../domain/user_profile.dart';
+import '../widgets/image_filter_screen.dart';
 
 class BasicInfoSection extends StatefulWidget {
   const BasicInfoSection({super.key});
@@ -108,6 +111,30 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     );
     if (source == null || !mounted) return;
 
+    // Phase 40.1 — ask for the right OS permission BEFORE invoking the
+    // picker. image_picker would prompt itself, but routing through
+    // AppPermissions gives us the "permanently denied → open Settings"
+    // SnackBar that a vanilla prompt misses.
+    final perm = source == ImageSource.camera ? AppPermission.camera : AppPermission.photos;
+    final outcome = await AppPermissions.ensure(perm);
+    if (!mounted) return;
+    if (outcome.isPermanentlyDenied) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(
+          source == ImageSource.camera
+            ? 'Camera access is off. Enable it in Settings to take a photo.'
+            : 'Photo library access is off. Enable it in Settings to pick a photo.',
+        ),
+        action: SnackBarAction(
+          label: 'Open Settings',
+          onPressed: AppPermissions.openSettings,
+        ),
+        duration: const Duration(seconds: 5),
+      ));
+      return;
+    }
+    if (!outcome.isGranted) return;  // user just said "no this time"; bail quietly
+
     final picker = ImagePicker();
     XFile? picked;
     try {
@@ -122,11 +149,57 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
       return;
     }
     if (picked == null || !mounted) return;
+
+    // Phase 39.2 — pipeline:
+    //   pick → crop (native UI, square aspect) → filter screen → upload.
+    //
+    // image_cropper renders a native crop view (uCrop on Android,
+    // TOCropViewController on iOS) with rotation, free-rotate, and a
+    // hard-locked 1:1 aspect ratio + 1024×1024 maxWidth/maxHeight so the
+    // result is bounded before we hand it to the in-app filter screen.
+    final CroppedFile? cropped = await ImageCropper().cropImage(
+      sourcePath: picked.path,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 92,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop photo',
+          lockAspectRatio: true,
+          hideBottomControls: false,
+          initAspectRatio: CropAspectRatioPreset.square,
+        ),
+        IOSUiSettings(
+          title: 'Crop photo',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+          aspectRatioPickerButtonHidden: true,
+        ),
+      ],
+    );
+    if (cropped == null || !mounted) return;
+
+    // Filter step — in-app screen with brightness/contrast/saturation
+    // sliders + 5 presets (Mono / Sepia / Cool / Warm / Vivid). Returns
+    // a NEW File on disk (the cropped source is left intact in case the
+    // user backs out via system-back; they keep their crop work).
+    final File? edited = await Navigator.of(context).push<File>(
+      MaterialPageRoute(
+        builder: (_) => ImageFilterScreen(
+          source: File(cropped.path),
+          title: 'Adjust profile photo',
+        ),
+      ),
+    );
+    if (edited == null || !mounted) return;
+
     // Capture local copies — Dart's flow analysis doesn't promote
     // through `setState` closures, and we read these again post-await.
-    final pickedPath     = picked.path;
-    final pickedName     = picked.name;
-    final pickedMimeType = picked.mimeType;
+    final pickedPath     = edited.path;
+    final pickedName     = 'avatar.jpg';
+    final pickedMimeType = 'image/jpeg';
 
     setState(() {
       _pickedAvatarPath = pickedPath;
