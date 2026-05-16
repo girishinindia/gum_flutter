@@ -521,6 +521,7 @@ class _EducationFormScreenState extends State<_EducationFormScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<String>(
+                        dropdownColor: Colors.white,
                         initialValue: _gradeType,
                         decoration: const InputDecoration(labelText: 'Type'),
                         items: _gradeTypes.map((g) => DropdownMenuItem(

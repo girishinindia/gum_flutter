@@ -318,6 +318,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                     ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
+                      dropdownColor: Colors.white,
                       initialValue: _gender,
                       decoration: const InputDecoration(labelText: 'Gender'),
                       items: const [

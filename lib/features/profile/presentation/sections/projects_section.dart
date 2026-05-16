@@ -419,6 +419,7 @@ class _ProjectFormScreenState extends State<_ProjectFormScreen> {
                 ),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
+                  dropdownColor: Colors.white,
                   initialValue: _status,
                   decoration: const InputDecoration(labelText: 'Status'),
                   items: _statuses.map((s) => DropdownMenuItem(

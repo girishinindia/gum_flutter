@@ -99,6 +99,34 @@ class AppTheme {
         hintStyle: GoogleFonts.outfit(color: AppColors.slate400, fontSize: 14),
       ),
 
+      // Phase 36.2 — dropdown menus.
+      //
+      // Material 3 leaves DropdownButton menu items with a semi-transparent
+      // surface that lets the form below bleed through (visible as
+      // "Male/Female/Other" rendering on top of "Public profile" toggle
+      // and other form fields). Forcing an opaque white background + a
+      // soft elevation makes the menu visually solid.
+      dropdownMenuTheme: DropdownMenuThemeData(
+        textStyle: GoogleFonts.outfit(fontSize: 14, color: AppColors.slate900),
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(Colors.white),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+          elevation: const WidgetStatePropertyAll(3),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: AppRadius.rMd),
+          ),
+        ),
+      ),
+      // PopupMenuButton + DropdownButtonFormField also read this — same
+      // opaque-white treatment so all menus look consistent.
+      popupMenuTheme: PopupMenuThemeData(
+        color: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.rMd),
+        textStyle: GoogleFonts.outfit(fontSize: 14, color: AppColors.slate900),
+      ),
+
       // Splash / ripple — soft brand tint instead of default grey.
       splashColor:    AppColors.sky100,
       highlightColor: AppColors.sky50,

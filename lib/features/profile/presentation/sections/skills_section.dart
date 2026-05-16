@@ -324,6 +324,7 @@ class _SkillDialogBodyState extends State<_SkillDialogBody> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DropdownButtonFormField<String>(
+              dropdownColor: Colors.white,
               initialValue: _prof,
               decoration: const InputDecoration(labelText: 'Proficiency'),
               items: widget.proficiencies.map((p) => DropdownMenuItem(

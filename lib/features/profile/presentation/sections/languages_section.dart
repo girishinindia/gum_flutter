@@ -98,6 +98,7 @@ class _LanguagesSectionState extends State<LanguagesSection> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   DropdownButtonFormField<String>(
+                    dropdownColor: Colors.white,
                     initialValue: prof,
                     decoration: const InputDecoration(labelText: 'Proficiency'),
                     items: _proficiencies.map((p) => DropdownMenuItem(

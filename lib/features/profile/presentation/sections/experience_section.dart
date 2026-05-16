@@ -405,32 +405,36 @@ class _ExperienceFormScreenState extends State<_ExperienceFormScreen> {
                   onSelected: (d) => setState(() => _designation = d),
                 ),
                 const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        initialValue: _employmentType,
-                        decoration: const InputDecoration(labelText: 'Employment type'),
-                        items: _employmentTypes.map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(_titleCase(e)),
-                            )).toList(),
-                        onChanged: (v) => setState(() => _employmentType = v),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        initialValue: _workMode,
-                        decoration: const InputDecoration(labelText: 'Work mode'),
-                        items: _workModes.map((w) => DropdownMenuItem(
-                              value: w,
-                              child: Text(_titleCase(w)),
-                            )).toList(),
-                        onChanged: (v) => setState(() => _workMode = v),
-                      ),
-                    ),
-                  ],
+                // Phase 36.3 — stack vertically on narrow screens.
+                //
+                // The previous Row+Expanded layout left ~150px per cell,
+                // not enough for DropdownButtonFormField's intrinsic
+                // minimum (label + selected text + chevron). On Pixel-4
+                // class viewports this overflowed by ~35px. Going
+                // vertical avoids the squeeze entirely and matches what
+                // every other long-label form field on this screen does.
+                DropdownButtonFormField<String>(
+                  dropdownColor: Colors.white,
+                  isExpanded: true,
+                  initialValue: _employmentType,
+                  decoration: const InputDecoration(labelText: 'Employment type'),
+                  items: _employmentTypes.map((e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(_titleCase(e)),
+                      )).toList(),
+                  onChanged: (v) => setState(() => _employmentType = v),
+                ),
+                const SizedBox(height: 14),
+                DropdownButtonFormField<String>(
+                  dropdownColor: Colors.white,
+                  isExpanded: true,
+                  initialValue: _workMode,
+                  decoration: const InputDecoration(labelText: 'Work mode'),
+                  items: _workModes.map((w) => DropdownMenuItem(
+                        value: w,
+                        child: Text(_titleCase(w)),
+                      )).toList(),
+                  onChanged: (v) => setState(() => _workMode = v),
                 ),
                 const SizedBox(height: 14),
                 TextFormField(

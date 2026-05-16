@@ -55,12 +55,28 @@ class SearchableSelect<T> extends StatelessWidget {
     // parameter — keeps `null_check_on_nullable_type_parameter` happy.
     final sel = selectedItem;
     final selectedLabel = sel == null ? null : labelOf(sel);
+
+    // Phase 36.1 fix — `InputDecorator` with `isEmpty: true` already
+    // renders `labelText` at the rest-position (where input text would
+    // normally appear). If we ALSO render the placeholder string as the
+    // child, both texts land on top of each other → the user sees
+    // "Sttreet state" / "Solectry" / "Bluferform" mashups.
+    //
+    // Behaviour we want:
+    //   • Nothing selected: float the label and show the placeholder
+    //     in muted text below — like every other text field.
+    //   • Something selected: float the label and show the value.
+    //
+    // We get that by FORCING `isEmpty: false` and rendering either the
+    // selected label or the placeholder ourselves. The label always
+    // floats; the body text never collides with it.
     return InkWell(
       onTap: (enabled && !isLoading) ? () => _openPicker(context) : null,
       borderRadius: BorderRadius.circular(8),
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
+          floatingLabelBehavior: FloatingLabelBehavior.always,
           errorText: errorText,
           helperText: helperText,
           prefixIcon: prefixIcon,
@@ -75,7 +91,7 @@ class SearchableSelect<T> extends StatelessWidget {
                 )
               : const Icon(Icons.arrow_drop_down),
         ),
-        isEmpty: selectedLabel == null,
+        isEmpty: false,
         child: Text(
           selectedLabel ?? placeholder,
           style: selectedLabel == null

@@ -148,6 +148,7 @@ class _ContactSectionState extends State<ContactSection> {
                     ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
+                      dropdownColor: Colors.white,
                       initialValue: _relation,
                       decoration: const InputDecoration(labelText: 'Relation'),
                       items: _relations.map((r) => DropdownMenuItem(
