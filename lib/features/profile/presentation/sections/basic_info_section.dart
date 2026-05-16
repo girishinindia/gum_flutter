@@ -14,9 +14,12 @@
 // Validation mirrors the web BasicInfoCard (display_name <= 100,
 // headline <= 200, bio <= 2000, slug <= 100, DOB age 13–120).
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/network/api_error.dart';
@@ -49,6 +52,17 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   bool    _hydrated     = false;
   String? _formError;
 
+  // Bug 3c — avatar uploader state.
+  //
+  // `_pickedAvatarPath` is set the moment the user picks an image; we
+  // show it as a local preview while the multipart PUT is in flight,
+  // then drop it once the server returns the persisted CDN URL via
+  // ProfileProfileUpdated. `_avatarUploading` gates the picker so the
+  // user can't double-tap.
+  String? _pickedAvatarPath;
+  bool    _avatarUploading = false;
+  String? _avatarError;
+
   @override
   void dispose() {
     _displayNameCtl.dispose();
@@ -69,6 +83,81 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     _gender              = profile.gender;
     _isPublic            = profile.isPublic ?? true;
     _hydrated            = true;
+  }
+
+  Future<void> _pickAvatar() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Pick from gallery'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Take a photo'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !mounted) return;
+
+    final picker = ImagePicker();
+    XFile? picked;
+    try {
+      picked = await picker.pickImage(
+        source: source,
+        maxWidth: 2400,
+        imageQuality: 88,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _avatarError = "Couldn't open picker: $e");
+      return;
+    }
+    if (picked == null || !mounted) return;
+    // Capture local copies — Dart's flow analysis doesn't promote
+    // through `setState` closures, and we read these again post-await.
+    final pickedPath     = picked.path;
+    final pickedName     = picked.name;
+    final pickedMimeType = picked.mimeType;
+
+    setState(() {
+      _pickedAvatarPath = pickedPath;
+      _avatarUploading  = true;
+      _avatarError      = null;
+    });
+
+    final profileBloc = context.read<ProfileBloc>();
+    try {
+      final updated = await profileBloc.repository.updateProfileWithImage(
+        profileImagePath:     pickedPath,
+        profileImageFilename: pickedName,
+        profileImageMimeType: pickedMimeType,
+      );
+      if (!mounted) return;
+      profileBloc.add(ProfileProfileUpdated(updated));
+      messenger.showSnackBar(const SnackBar(content: Text('Profile photo updated.')));
+    } on ApiError catch (e) {
+      if (!mounted) return;
+      setState(() => _avatarError = e.message);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _avatarError = "Couldn't upload photo. Please try again.");
+    } finally {
+      if (mounted) setState(() {
+        _avatarUploading = false;
+        // Drop the local preview — the bundle.profile.profileImageUrl
+        // now points at the persisted CDN URL.
+        _pickedAvatarPath = null;
+      });
+    }
   }
 
   Future<void> _pickDob() async {
@@ -151,6 +240,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             );
           }
           _hydrate(state.bundle!.profile, context.read<AuthBloc>().state);
+          final avatarUrl = state.bundle!.profile.profileImageUrl;
           return SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -159,6 +249,15 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    _AvatarRow(
+                      avatarUrl:      avatarUrl,
+                      pickedFilePath: _pickedAvatarPath,
+                      busy:           _avatarUploading,
+                      error:          _avatarError,
+                      displayName:    _displayNameCtl.text,
+                      onPick:         _pickAvatar,
+                    ),
+                    const SizedBox(height: 18),
                     TextFormField(
                       controller: _displayNameCtl,
                       textInputAction: TextInputAction.next,
@@ -278,6 +377,121 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// _AvatarRow — circular avatar + camera badge that opens the picker.
+//
+// The avatar source priority is:
+//   1. `pickedFilePath` — local file just chosen by the user (shown
+//      instantly so they get feedback while the upload is in flight).
+//   2. `avatarUrl` — the persisted CDN URL from UserProfile.
+//   3. Initial-letter fallback — first letter of `displayName`.
+//
+// `busy` darkens the avatar + shows a spinner over the badge while the
+// multipart PUT is mid-flight. `error` renders an inline rose message
+// below the row.
+// ════════════════════════════════════════════════════════════════════
+
+class _AvatarRow extends StatelessWidget {
+  const _AvatarRow({
+    required this.avatarUrl,
+    required this.pickedFilePath,
+    required this.busy,
+    required this.error,
+    required this.displayName,
+    required this.onPick,
+  });
+
+  final String?     avatarUrl;
+  final String?     pickedFilePath;
+  final bool        busy;
+  final String?     error;
+  final String      displayName;
+  final VoidCallback onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final initial = displayName.trim().isEmpty
+        ? '?'
+        : displayName.trim()[0].toUpperCase();
+
+    Widget avatar;
+    if (pickedFilePath != null) {
+      avatar = ClipOval(
+        child: Image.file(
+          File(pickedFilePath!),
+          width: 96, height: 96, fit: BoxFit.cover,
+        ),
+      );
+    } else if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+      avatar = ClipOval(
+        child: Image.network(
+          avatarUrl!,
+          width: 96, height: 96, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _initialAvatar(theme, initial),
+        ),
+      );
+    } else {
+      avatar = _initialAvatar(theme, initial);
+    }
+
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Opacity(opacity: busy ? 0.65 : 1.0, child: avatar),
+            Material(
+              shape: const CircleBorder(),
+              color: theme.colorScheme.primaryContainer,
+              elevation: 1,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: busy ? null : onPick,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: busy
+                      ? const SizedBox(
+                          width: 18, height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2.2),
+                        )
+                      : Icon(Icons.camera_alt_outlined,
+                          size: 18, color: theme.colorScheme.onPrimaryContainer),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (error != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            error!,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.error,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _initialAvatar(ThemeData theme, String initial) {
+    return CircleAvatar(
+      radius: 48,
+      backgroundColor: theme.colorScheme.primary,
+      foregroundColor: theme.colorScheme.onPrimary,
+      child: Text(
+        initial,
+        style: theme.textTheme.headlineMedium?.copyWith(
+          color: theme.colorScheme.onPrimary,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

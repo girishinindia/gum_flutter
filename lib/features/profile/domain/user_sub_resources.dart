@@ -396,46 +396,65 @@ class UserLanguage extends Equatable {
 }
 
 // ── /user-social-medias ──────────────────────────────────────────────
+//
+// Bug 5 fix — Phase 33.2:
+//
+// The previous model spoke `{ platform: <code>, url, is_public,
+// display_order }` — none of which match the live `user_social_medias`
+// schema. The server actually uses FK ids: `social_media_id` + `profile_url`,
+// with `is_primary` instead of `is_public`. The old shape was a holdover
+// from the earlier prototype; we'd been sending strings the server then
+// tried to coerce to numbers, which is what produced the Zod error
+// "Expected number, received nan, Required" the user reported.
+//
+// On read, the server joins the master `social_medias` row so we can
+// render the platform name + icon URL without an extra lookup. The
+// joined row lives on `.socialMedia`.
 
 class UserSocialMedia extends Equatable {
   const UserSocialMedia({
     this.id,
     this.userId,
-    required this.platform,
-    required this.url,
+    required this.socialMediaId,
+    required this.profileUrl,
     this.username,
-    this.isPublic,
-    this.displayOrder,
+    this.isPrimary,
+    this.isVerified,
+    this.socialMedia,
   });
 
   final int?    id;
   final int?    userId;
-  final String  platform;  // canonical code: 'linkedin', 'github', ...
-  final String  url;
+  final int     socialMediaId;
+  final String  profileUrl;
   final String? username;
-  final bool?   isPublic;
-  final int?    displayOrder;
+  final bool?   isPrimary;
+  final bool?   isVerified;
+  final SocialMediaPlatform? socialMedia;
 
   factory UserSocialMedia.fromJson(Map<String, dynamic> j) => UserSocialMedia(
-        id:           (j['id'] as num?)?.toInt(),
-        userId:       (j['user_id'] as num?)?.toInt(),
-        platform:     (j['platform'] ?? '') as String,
-        url:          (j['url']      ?? '') as String,
-        username:     j['username']      as String?,
-        isPublic:     j['is_public']     as bool?,
-        displayOrder: (j['display_order'] as num?)?.toInt(),
+        id:            (j['id'] as num?)?.toInt(),
+        userId:        (j['user_id'] as num?)?.toInt(),
+        socialMediaId: (j['social_media_id'] as num?)?.toInt() ?? 0,
+        profileUrl:    (j['profile_url'] ?? '') as String,
+        username:      j['username']    as String?,
+        isPrimary:     j['is_primary']  as bool?,
+        isVerified:    j['is_verified'] as bool?,
+        socialMedia: j['social_media'] is Map<String, dynamic>
+            ? SocialMediaPlatform.fromJson(j['social_media'] as Map<String, dynamic>)
+            : null,
       );
 
   Map<String, dynamic> toJson() => {
-        'platform': platform,
-        'url':      url,
-        if (username     != null) 'username':      username,
-        if (isPublic     != null) 'is_public':     isPublic,
-        if (displayOrder != null) 'display_order': displayOrder,
+        'social_media_id': socialMediaId,
+        'profile_url':     profileUrl,
+        if (username   != null) 'username':    username,
+        if (isPrimary  != null) 'is_primary':  isPrimary,
+        if (isVerified != null) 'is_verified': isVerified,
       };
 
   @override
-  List<Object?> get props => [id, userId, platform, url, username, isPublic, displayOrder];
+  List<Object?> get props => [id, userId, socialMediaId, profileUrl, username, isPrimary, isVerified, socialMedia];
 }
 
 // ── /user-documents ──────────────────────────────────────────────────

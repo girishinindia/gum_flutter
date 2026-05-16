@@ -396,6 +396,15 @@ class _EducationFormScreenState extends State<_EducationFormScreen> {
     } on ApiError catch (e) {
       if (!mounted) return;
       setState(() => _formError = e.message);
+      // Bug 3b fix: pull a fresh list so the section view behind this
+      // form reflects what's actually persisted. The bloc only updates
+      // on success above, but a partial save could leave the existing
+      // row's dates in a stale state — re-fetching is cheap insurance.
+      try {
+        final refreshed = await bloc.repository.educationApi.list();
+        if (!mounted) return;
+        bloc.add(ProfileEducationReplaced(refreshed));
+      } catch (_) {/* keep the original error message */}
     } catch (_) {
       if (!mounted) return;
       setState(() => _formError = 'Something went wrong. Please try again.');

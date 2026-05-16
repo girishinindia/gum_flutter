@@ -18,8 +18,13 @@ pluginManagement {
 
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    id "com.android.application" version "8.1.0" apply false
-    id "org.jetbrains.kotlin.android" version "1.8.22" apply false
+    // Bumped from 8.1.0 → 8.9.1. Recent androidx releases
+    // (activity 1.12.x, core 1.18.x, navigationevent 1.0.x) ship
+    // AAR metadata that requires AGP ≥ 8.9.1; older AGP fails
+    // `:app:checkDebugAarMetadata` with a hard error.
+    id "com.android.application" version "8.9.1" apply false
+    // Bumped Kotlin to 1.9.25 to stay compatible with AGP 8.9.x.
+    id "org.jetbrains.kotlin.android" version "1.9.25" apply false
 }
 
 include ":app"

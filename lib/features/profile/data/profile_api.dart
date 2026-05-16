@@ -39,6 +39,66 @@ class ProfileApi {
       throw ApiError.from(e);
     }
   }
+
+  /// Multipart variant of [updateMyProfile] — used when uploading the
+  /// avatar (`profile_image`) and/or cover (`cover_image`). The server
+  /// route is wrapped with `upload.fields(profile_image, cover_image)`
+  /// plus the `coerceNullStrings` middleware (Phase 30.2), so any null
+  /// values in [patch] get encoded as the literal "null" and the server
+  /// turns them back into real null before update.
+  Future<UserProfile> updateMyProfileWithImage({
+    Map<String, dynamic>? patch,
+    String? profileImagePath,
+    String? profileImageFilename,
+    String? profileImageMimeType,
+    String? coverImagePath,
+    String? coverImageFilename,
+    String? coverImageMimeType,
+  }) async {
+    try {
+      final fd = FormData();
+      (patch ?? const <String, dynamic>{}).forEach((k, v) {
+        if (v == null) {
+          fd.fields.add(MapEntry(k, 'null'));
+        } else if (v is bool) {
+          fd.fields.add(MapEntry(k, v ? 'true' : 'false'));
+        } else if (v is DateTime) {
+          fd.fields.add(MapEntry(k, v.toIso8601String()));
+        } else {
+          fd.fields.add(MapEntry(k, v.toString()));
+        }
+      });
+      if (profileImagePath != null) {
+        fd.files.add(MapEntry(
+          'profile_image',
+          MultipartFile.fromFileSync(
+            profileImagePath,
+            filename: profileImageFilename,
+            contentType: profileImageMimeType != null ? MediaType.parse(profileImageMimeType) : null,
+          ),
+        ));
+      }
+      if (coverImagePath != null) {
+        fd.files.add(MapEntry(
+          'cover_image',
+          MultipartFile.fromFileSync(
+            coverImagePath,
+            filename: coverImageFilename,
+            contentType: coverImageMimeType != null ? MediaType.parse(coverImageMimeType) : null,
+          ),
+        ));
+      }
+      final res = await _dio.put<Map<String, dynamic>>(
+        '/user-profiles/me',
+        data: fd,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final data = unwrapEnvelope<Map<String, dynamic>>(res);
+      return UserProfile.fromJson(data);
+    } catch (e) {
+      throw ApiError.from(e);
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════

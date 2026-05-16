@@ -1,8 +1,12 @@
 // Social links section.
 //
-// Each entry: platform (from /social-medias master) + URL + optional
-// username + is_public + display_order. The platform picker uses
-// SearchableSelect since the platform list is short (~20 rows).
+// Each entry: `social_media_id` (FK → master `social_medias.id`) +
+// `profile_url` + optional `username` + `is_primary` + `is_verified`.
+// The platform picker uses SearchableSelect since the platform list is
+// short (~20 rows). Phase 33.2 renamed the payload fields to match the
+// server's FK-driven schema — the old `{ platform, url, is_public,
+// display_order }` shape never matched the live `user_social_medias`
+// table and was producing "Expected number, received nan" Zod errors.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -102,6 +106,8 @@ class _SocialRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final name  = entry.socialMedia?.name
+        ?? (entry.socialMedia?.code != null ? _titleCase(entry.socialMedia!.code) : '#${entry.socialMediaId}');
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -115,13 +121,13 @@ class _SocialRow extends StatelessWidget {
           foregroundColor: theme.colorScheme.onPrimaryContainer,
           child: const Icon(Icons.link),
         ),
-        title: Text(_titleCase(entry.platform), style: theme.textTheme.titleMedium),
+        title: Text(name, style: theme.textTheme.titleMedium),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
             Text(
-              (entry.username ?? '').isNotEmpty ? '@${entry.username}' : entry.url,
+              (entry.username ?? '').isNotEmpty ? '@${entry.username}' : entry.profileUrl,
               style: theme.textTheme.bodySmall,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -129,7 +135,7 @@ class _SocialRow extends StatelessWidget {
             if ((entry.username ?? '').isNotEmpty) ...[
               const SizedBox(height: 2),
               Text(
-                entry.url,
+                entry.profileUrl,
                 style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -141,8 +147,10 @@ class _SocialRow extends StatelessWidget {
           spacing: 4,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            if (entry.isPublic == true)
-              Icon(Icons.visibility, size: 18, color: theme.colorScheme.secondary),
+            if (entry.isPrimary == true)
+              Icon(Icons.star, size: 18, color: theme.colorScheme.secondary),
+            if (entry.isVerified == true)
+              Icon(Icons.verified, size: 18, color: theme.colorScheme.tertiary),
             const Icon(Icons.chevron_right),
           ],
         ),
@@ -172,8 +180,7 @@ class _SocialFormScreenState extends State<_SocialFormScreen> {
   final _masters  = MastersApi();
   final _urlCtl   = TextEditingController();
   final _userCtl  = TextEditingController();
-  final _orderCtl = TextEditingController();
-  bool _isPublic   = true;
+  bool _isPrimary = false;
 
   SocialMediaPlatform? _platform;
   List<SocialMediaPlatform> _platforms = const [];
@@ -186,13 +193,13 @@ class _SocialFormScreenState extends State<_SocialFormScreen> {
     super.initState();
     final e = widget.existing;
     if (e != null) {
-      _urlCtl.text    = e.url;
-      _userCtl.text   = e.username ?? '';
-      _orderCtl.text  = e.displayOrder?.toString() ?? '';
-      _isPublic       = e.isPublic ?? true;
-      // The user_social_medias row stores `platform` as a code string
-      // (e.g. 'linkedin'). The platforms master returns rows where
-      // `code` is the same string. We'll resolve after the load.
+      _urlCtl.text  = e.profileUrl;
+      _userCtl.text = e.username ?? '';
+      _isPrimary    = e.isPrimary ?? false;
+      // The joined `social_media` row already gives us the platform; we
+      // try to resolve to the same instance from the master list after
+      // load so the SearchableSelect highlights it.
+      if (e.socialMedia != null) _platform = e.socialMedia;
     }
     _loadPlatforms();
   }
@@ -205,8 +212,8 @@ class _SocialFormScreenState extends State<_SocialFormScreen> {
       setState(() {
         _platforms = rows;
         if (widget.existing != null) {
-          final code = widget.existing!.platform;
-          final match = rows.where((p) => p.code == code).cast<SocialMediaPlatform?>().firstWhere(
+          final id = widget.existing!.socialMediaId;
+          final match = rows.where((p) => p.id == id).cast<SocialMediaPlatform?>().firstWhere(
             (p) => p != null, orElse: () => null);
           if (match != null) _platform = match;
         }
@@ -220,7 +227,6 @@ class _SocialFormScreenState extends State<_SocialFormScreen> {
   void dispose() {
     _urlCtl.dispose();
     _userCtl.dispose();
-    _orderCtl.dispose();
     super.dispose();
   }
 
@@ -236,13 +242,14 @@ class _SocialFormScreenState extends State<_SocialFormScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
+    // Bug 5 fix: payload now matches the server schema exactly —
+    // `social_media_id` (FK numeric) + `profile_url`, `is_primary`
+    // (replacing the old `platform` code + `url` + `is_public`).
     final payload = <String, dynamic>{
-      'platform':      _platform!.code,
-      'url':           _urlCtl.text.trim(),
-      'username':      _userCtl.text.trim().isEmpty ? null : _userCtl.text.trim(),
-      'is_public':     _isPublic,
-      if (_orderCtl.text.trim().isNotEmpty)
-        'display_order': int.tryParse(_orderCtl.text.trim()),
+      'social_media_id': _platform!.id,
+      'profile_url':     _urlCtl.text.trim(),
+      'username':        _userCtl.text.trim().isEmpty ? null : _userCtl.text.trim(),
+      'is_primary':      _isPrimary,
     };
     try {
       final api = bloc.repository.socialMediaApi;
@@ -354,26 +361,12 @@ class _SocialFormScreenState extends State<_SocialFormScreen> {
                   ),
                   validator: (v) => FormValidators.username(v).msg,
                 ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _orderCtl,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(3),
-                  ],
-                  decoration: const InputDecoration(
-                    labelText: 'Display order',
-                    helperText: 'Lower numbers appear first.',
-                  ),
-                ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Public'),
-                  subtitle: const Text('Visible on your public profile.'),
-                  value: _isPublic,
-                  onChanged: (v) => setState(() => _isPublic = v),
+                  title: const Text('Primary link'),
+                  subtitle: const Text('Highlighted on your profile as the main one.'),
+                  value: _isPrimary,
+                  onChanged: (v) => setState(() => _isPrimary = v),
                 ),
                 if (_formError != null) ...[
                   const SizedBox(height: 14),

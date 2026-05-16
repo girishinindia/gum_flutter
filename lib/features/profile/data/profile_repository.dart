@@ -108,6 +108,28 @@ class ProfileRepository {
   Future<UserProfile> updateProfile(Map<String, dynamic> patch) =>
       _profileApi.updateMyProfile(patch);
 
+  /// Multipart variant — used by the avatar picker in Basic Info to upload
+  /// `profile_image` (or `cover_image`) alongside any text patch fields.
+  /// Forwarding helper; the API method does the FormData assembly.
+  Future<UserProfile> updateProfileWithImage({
+    Map<String, dynamic>? patch,
+    String? profileImagePath,
+    String? profileImageFilename,
+    String? profileImageMimeType,
+    String? coverImagePath,
+    String? coverImageFilename,
+    String? coverImageMimeType,
+  }) =>
+      _profileApi.updateMyProfileWithImage(
+        patch: patch,
+        profileImagePath:     profileImagePath,
+        profileImageFilename: profileImageFilename,
+        profileImageMimeType: profileImageMimeType,
+        coverImagePath:       coverImagePath,
+        coverImageFilename:   coverImageFilename,
+        coverImageMimeType:   coverImageMimeType,
+      );
+
   static Future<T?> _safe<T>(Future<T> Function() fn) async {
     try { return await fn(); } catch (_) { return null; }
   }
