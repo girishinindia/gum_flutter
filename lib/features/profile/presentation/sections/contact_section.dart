@@ -69,10 +69,15 @@ class _ContactSectionState extends State<ContactSection> {
     final messenger   = ScaffoldMessenger.of(context);
 
     try {
+      // Phase 43.3 — server schema uses `emergency_contact_phone` /
+      // `_relationship`; previously we were sending `_mobile` / `_relation`
+      // which Zod silently stripped, so saves looked successful but the
+      // values never persisted (mobile + relation came back blank on
+      // re-entry).
       final patch = <String, dynamic>{
-        'emergency_contact_name':     _nameCtl.text.trim().isEmpty ? null : _nameCtl.text.trim(),
-        'emergency_contact_mobile':   _mobileCtl.text.trim().isEmpty ? null : _mobileCtl.text.trim(),
-        'emergency_contact_relation': _relation,
+        'emergency_contact_name':         _nameCtl.text.trim().isEmpty ? null : _nameCtl.text.trim(),
+        'emergency_contact_phone':        _mobileCtl.text.trim().isEmpty ? null : _mobileCtl.text.trim(),
+        'emergency_contact_relationship': _relation,
       };
       final updated = await profileBloc.repository.updateProfile(patch);
       if (!mounted) return;
@@ -80,6 +85,7 @@ class _ContactSectionState extends State<ContactSection> {
       messenger.showSnackBar(const SnackBar(content: Text('Saved.')));
     } on ApiError catch (e) {
       if (!mounted) return;
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       setState(() => _formError = e.message);
     } catch (_) {
       if (!mounted) return;

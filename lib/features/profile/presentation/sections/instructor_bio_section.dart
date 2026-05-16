@@ -90,6 +90,7 @@ class _InstructorBioSectionState extends State<InstructorBioSection> {
       messenger.showSnackBar(const SnackBar(content: Text('Saved.')));
     } on ApiError catch (e) {
       if (!mounted) return;
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       setState(() => _formError = e.message);
     } catch (_) {
       if (!mounted) return;

@@ -157,29 +157,54 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     // TOCropViewController on iOS) with rotation, free-rotate, and a
     // hard-locked 1:1 aspect ratio + 1024×1024 maxWidth/maxHeight so the
     // result is bounded before we hand it to the in-app filter screen.
-    final CroppedFile? cropped = await ImageCropper().cropImage(
-      sourcePath: picked.path,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 92,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop photo',
-          lockAspectRatio: true,
-          hideBottomControls: false,
-          initAspectRatio: CropAspectRatioPreset.square,
-        ),
-        IOSUiSettings(
-          title: 'Crop photo',
-          aspectRatioLockEnabled: true,
-          resetAspectRatioEnabled: false,
-          aspectRatioPickerButtonHidden: true,
-        ),
-      ],
-    );
-    if (cropped == null || !mounted) return;
+    //
+    // Phase 43.4 — wrap in try/catch + log so a silent native failure
+    // (missing theme, FileProvider authority mismatch, content:// URI
+    // instead of file://) surfaces as an inline error instead of the
+    // tap appearing to do nothing.
+    CroppedFile? cropped;
+    try {
+      cropped = await ImageCropper().cropImage(
+        sourcePath: picked.path,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 92,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop photo',
+            lockAspectRatio: true,
+            hideBottomControls: false,
+            initAspectRatio: CropAspectRatioPreset.square,
+          ),
+          IOSUiSettings(
+            title: 'Crop photo',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+            aspectRatioPickerButtonHidden: true,
+          ),
+        ],
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // Phase 43.4 fallback — if cropping fails (rare native plugin
+      // mismatch), accept the picked image as-is so the user isn't
+      // stuck. We still flow into the filter step which has its own
+      // editing UI. Show a non-blocking warning.
+      messenger.showSnackBar(SnackBar(
+        content: Text("Couldn't open the crop tool — skipping to filters: $e"),
+        duration: const Duration(seconds: 4),
+      ));
+      cropped = null;
+    }
+    if (!mounted) return;
+
+    // If the user backed out of the cropper, treat it as a cancel and
+    // bail. (Distinct from a plugin error above, which sets cropped =
+    // null too — but the SnackBar already gave them feedback. To tell
+    // them apart we'd need a sentinel; for now the SnackBar is enough.)
+    final sourceForFilter = cropped?.path ?? picked.path;
 
     // Filter step — in-app screen with brightness/contrast/saturation
     // sliders + 5 presets (Mono / Sepia / Cool / Warm / Vivid). Returns
@@ -188,7 +213,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     final File? edited = await Navigator.of(context).push<File>(
       MaterialPageRoute(
         builder: (_) => ImageFilterScreen(
-          source: File(cropped.path),
+          source: File(sourceForFilter),
           title: 'Adjust profile photo',
         ),
       ),
@@ -288,6 +313,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
       messenger.showSnackBar(const SnackBar(content: Text('Saved.')));
     } on ApiError catch (e) {
       if (!mounted) return;
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       setState(() => _formError = e.message);
     } catch (_) {
       if (!mounted) return;

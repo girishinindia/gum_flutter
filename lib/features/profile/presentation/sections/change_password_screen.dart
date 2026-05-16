@@ -87,6 +87,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         _otpError     = null;
       });
     } on ApiError catch (e) {
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       if (mounted) setState(() => _formError = e.message);
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -186,6 +187,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         Navigator.of(context).maybePop();
       }
     } on ApiError catch (e) {
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       if (mounted) setState(() => _formError = e.message);
     } finally {
       if (mounted) setState(() => _submitting = false);

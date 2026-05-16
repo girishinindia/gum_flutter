@@ -320,6 +320,7 @@ class _ExperienceFormScreenState extends State<_ExperienceFormScreen> {
       navigator.pop(true);
     } on ApiError catch (e) {
       if (!mounted) return;
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       setState(() => _formError = e.message);
     } catch (_) {
       if (!mounted) return;
@@ -336,8 +337,8 @@ class _ExperienceFormScreenState extends State<_ExperienceFormScreen> {
         title: const Text('Delete role?'),
         content: const Text('This experience entry will be removed permanently.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton.tonal(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(dialogCtx, false), child: const Text('Cancel')),
+          FilledButton.tonal(onPressed: () => Navigator.pop(dialogCtx, true), child: const Text('Delete')),
         ],
       ),
     );

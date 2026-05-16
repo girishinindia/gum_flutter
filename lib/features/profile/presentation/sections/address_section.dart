@@ -144,26 +144,53 @@ class _AddressSectionState extends State<AddressSection> {
     _permLine2.text = p.permanentAddressLine2 ?? '';
     _permPin.text   = p.permanentPostalCode ?? '';
 
-    // Resolve FK ids to objects once countries/states/cities arrive.
-    // First pass uses stub objects so the field shows the id while
-    // waiting for the masters to load.
+    // Phase 43.2 — the API now embeds joined country/state/city names
+    // (`current_country: {id, name}` etc. via PROFILE_SELECT), so on
+    // re-entry we seed each selectedItem with the REAL display label
+    // instead of a `#<id>` stub. The cascade below still loads the
+    // full lists in the background — first so the dropdown is usable,
+    // second so the stored row gets swapped for the canonical Equatable
+    // instance from the loaded list (preserves selection highlight in
+    // the picker sheet).
     if (p.currentCountryId != null) {
-      _curCountry = Country(id: p.currentCountryId!, name: '#${p.currentCountryId}');
+      _curCountry = Country(
+        id:   p.currentCountryId!,
+        name: p.currentCountryName ?? '#${p.currentCountryId}',
+      );
     }
     if (p.currentStateId != null) {
-      _curState = StateRow(id: p.currentStateId!, countryId: p.currentCountryId ?? 0, name: '#${p.currentStateId}');
+      _curState = StateRow(
+        id:        p.currentStateId!,
+        countryId: p.currentCountryId ?? 0,
+        name:      p.currentStateName ?? '#${p.currentStateId}',
+      );
     }
     if (p.currentCityId != null) {
-      _curCity = CityRow(id: p.currentCityId!, stateId: p.currentStateId ?? 0, name: '#${p.currentCityId}');
+      _curCity = CityRow(
+        id:      p.currentCityId!,
+        stateId: p.currentStateId ?? 0,
+        name:    p.currentCityName ?? '#${p.currentCityId}',
+      );
     }
     if (p.permanentCountryId != null) {
-      _permCountry = Country(id: p.permanentCountryId!, name: '#${p.permanentCountryId}');
+      _permCountry = Country(
+        id:   p.permanentCountryId!,
+        name: p.permanentCountryName ?? '#${p.permanentCountryId}',
+      );
     }
     if (p.permanentStateId != null) {
-      _permState = StateRow(id: p.permanentStateId!, countryId: p.permanentCountryId ?? 0, name: '#${p.permanentStateId}');
+      _permState = StateRow(
+        id:        p.permanentStateId!,
+        countryId: p.permanentCountryId ?? 0,
+        name:      p.permanentStateName ?? '#${p.permanentStateId}',
+      );
     }
     if (p.permanentCityId != null) {
-      _permCity = CityRow(id: p.permanentCityId!, stateId: p.permanentStateId ?? 0, name: '#${p.permanentCityId}');
+      _permCity = CityRow(
+        id:      p.permanentCityId!,
+        stateId: p.permanentStateId ?? 0,
+        name:    p.permanentCityName ?? '#${p.permanentCityId}',
+      );
     }
 
     // Kick off cascade loads to resolve the stub labels.
@@ -267,6 +294,7 @@ class _AddressSectionState extends State<AddressSection> {
       messenger.showSnackBar(const SnackBar(content: Text('Saved.')));
     } on ApiError catch (e) {
       if (!mounted) return;
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       setState(() => _formError = e.message);
     } catch (_) {
       if (!mounted) return;

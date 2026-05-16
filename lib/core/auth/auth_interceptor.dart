@@ -67,6 +67,32 @@ class AuthInterceptor extends QueuedInterceptor {
   }
 
   // ── Inbound — 401 handling ─────────────────────────────────────────
+  //
+  // Phase 43.5 — ApiClient configures Dio with `validateStatus: s < 500`
+  // so 401 responses come through `onResponse`, not `onError`. We have
+  // to refresh from BOTH hooks: onResponse for the common case, onError
+  // for the rare path where the server (or a 5xx adjacent) actually
+  // throws.
+
+  @override
+  Future<void> onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) async {
+    final status = response.statusCode;
+    final reqOpts = response.requestOptions;
+    final isRefreshCall = reqOpts.path.endsWith('/auth/refresh');
+
+    if (status == 401 && !isRefreshCall && !_alreadyRetried(reqOpts)) {
+      final retried = await _tryRefreshAndReplay(reqOpts);
+      if (retried != null) return handler.resolve(retried);
+      // Refresh failed — fall through with the original 401 response so
+      // unwrapEnvelope throws a silent ApiError (the AuthBloc has
+      // already been signalled to log out).
+    }
+    return handler.next(response);
+  }
+
   @override
   Future<void> onError(
     DioException err,
@@ -80,26 +106,31 @@ class AuthInterceptor extends QueuedInterceptor {
     final isRefreshCall = reqOpts.path.endsWith('/auth/refresh');
 
     if (status == 401 && !isRefreshCall && !_alreadyRetried(reqOpts)) {
-      final newAccess = await _refreshOnce();
-      if (newAccess == null) {
-        // Refresh failed → wipe + signal session expired.
-        await SessionStorage.clearSession();
-        _sessionExpiredCtl.add(null);
-        return handler.next(err);
-      }
-
-      // Replay the original request once with the new token.
-      _markRetried(reqOpts);
-      reqOpts.headers['Authorization'] = 'Bearer $newAccess';
-      try {
-        final retried = await _refreshDio.fetch<dynamic>(reqOpts);
-        return handler.resolve(retried);
-      } catch (e) {
-        return handler.next(e is DioException ? e : err);
-      }
+      final retried = await _tryRefreshAndReplay(reqOpts);
+      if (retried != null) return handler.resolve(retried);
+      return handler.next(err);
     }
 
     return handler.next(err);
+  }
+
+  /// Phase 43.5 — shared body for the two refresh-replay hooks. Returns
+  /// the replayed Response on success, null on failure (and signals
+  /// AuthBloc to log the user out as a side effect).
+  Future<Response<dynamic>?> _tryRefreshAndReplay(RequestOptions reqOpts) async {
+    final newAccess = await _refreshOnce();
+    if (newAccess == null) {
+      await SessionStorage.clearSession();
+      _sessionExpiredCtl.add(null);
+      return null;
+    }
+    _markRetried(reqOpts);
+    reqOpts.headers['Authorization'] = 'Bearer $newAccess';
+    try {
+      return await _refreshDio.fetch<dynamic>(reqOpts);
+    } catch (_) {
+      return null;
+    }
   }
 
   // ── Refresh plumbing ────────────────────────────────────────────────

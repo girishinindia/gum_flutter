@@ -265,6 +265,7 @@ class _ProjectFormScreenState extends State<_ProjectFormScreen> {
       navigator.pop(true);
     } on ApiError catch (e) {
       if (!mounted) return;
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       setState(() => _formError = e.message);
     } catch (_) {
       if (!mounted) return;
@@ -281,8 +282,8 @@ class _ProjectFormScreenState extends State<_ProjectFormScreen> {
         title: const Text('Delete project?'),
         content: const Text('This project will be removed permanently.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton.tonal(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(dialogCtx, false), child: const Text('Cancel')),
+          FilledButton.tonal(onPressed: () => Navigator.pop(dialogCtx, true), child: const Text('Delete')),
         ],
       ),
     );

@@ -97,6 +97,13 @@ class AppTheme {
         enabledBorder: OutlineInputBorder(borderRadius: AppRadius.rMd, borderSide: const BorderSide(color: AppColors.outline)),
         focusedBorder: OutlineInputBorder(borderRadius: AppRadius.rMd, borderSide: const BorderSide(color: AppColors.sky500, width: 1.5)),
         hintStyle: GoogleFonts.outfit(color: AppColors.slate400, fontSize: 14),
+        // Phase 43.6 — let validation errors + helper text wrap to several
+        // lines instead of getting truncated with "...". Examples that
+        // were getting cut off:
+        //   "End date must be on or afte..." → "End date must be on or after Start date"
+        //   "Letters, digits, dots, hyphens. Used in your profile U..." → full sentence
+        errorMaxLines: 4,
+        helperMaxLines: 4,
       ),
 
       // Phase 36.2 — dropdown menus.

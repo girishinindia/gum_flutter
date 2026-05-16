@@ -99,6 +99,7 @@ class _ChangeContactScreenState extends State<ChangeContactScreen> {
         _otpError     = null;
       });
     } on ApiError catch (e) {
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       if (mounted) setState(() => _formError = e.message);
     } finally {
       if (mounted) setState(() => _submitting = false);

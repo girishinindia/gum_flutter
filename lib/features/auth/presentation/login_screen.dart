@@ -63,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
       router.go('/home');
     } on ApiError catch (e) {
       if (!mounted) return;
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       setState(() => _formError = e.message);
     } catch (e) {
       if (!mounted) return;

@@ -395,6 +395,7 @@ class _EducationFormScreenState extends State<_EducationFormScreen> {
       navigator.pop(true);
     } on ApiError catch (e) {
       if (!mounted) return;
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       setState(() => _formError = e.message);
       // Bug 3b fix: pull a fresh list so the section view behind this
       // form reflects what's actually persisted. The bloc only updates
@@ -416,12 +417,12 @@ class _EducationFormScreenState extends State<_EducationFormScreen> {
   Future<void> _confirmDelete() async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete entry?'),
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text("Delete entry?"),
         content: const Text('This education entry will be removed permanently.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton.tonal(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(dialogCtx, false), child: const Text('Cancel')),
+          FilledButton.tonal(onPressed: () => Navigator.pop(dialogCtx, true), child: const Text('Delete')),
         ],
       ),
     );

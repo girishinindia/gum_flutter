@@ -113,6 +113,7 @@ class _SkillsSectionState extends State<SkillsSection> {
       bloc.add(ProfileSkillsReplaced(fresh));
       messenger.showSnackBar(SnackBar(content: Text('Added "${master.name}".')));
     } on ApiError catch (e) {
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       if (mounted) setState(() => _formError = e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -138,6 +139,7 @@ class _SkillsSectionState extends State<SkillsSection> {
       bloc.add(ProfileSkillsReplaced(fresh));
       messenger.showSnackBar(const SnackBar(content: Text('Saved.')));
     } on ApiError catch (e) {
+      if (e.isSilent) return; // Phase 43.5 — silent 401 → AuthBloc redirects
       if (mounted) setState(() => _formError = e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
