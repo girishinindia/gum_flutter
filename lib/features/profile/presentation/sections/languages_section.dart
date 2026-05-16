@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/network/api_error.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../bloc/profile_bloc.dart';
 import '../../bloc/profile_event.dart';
 import '../../bloc/profile_state.dart';
@@ -28,7 +29,6 @@ class LanguagesSection extends StatefulWidget {
 class _LanguagesSectionState extends State<LanguagesSection> {
   final _masters = MastersApi();
   bool _busy = false;
-  String? _formError;
 
   static const _proficiencies = ['basic', 'conversational', 'professional', 'fluent', 'native'];
 
@@ -167,10 +167,7 @@ class _LanguagesSectionState extends State<LanguagesSection> {
   Future<void> _persistAdd(MasterLanguage master, _LangResult res) async {
     final bloc = context.read<ProfileBloc>();
     final messenger = ScaffoldMessenger.of(context);
-    setState(() {
-      _busy = true;
-      _formError = null;
-    });
+    setState(() => _busy = true);
     try {
       await bloc.repository.languagesApi.add({
         'language_id':       master.id,
@@ -186,7 +183,7 @@ class _LanguagesSectionState extends State<LanguagesSection> {
       bloc.add(ProfileLanguagesReplaced(fresh));
       messenger.showSnackBar(SnackBar(content: Text('Added "${master.name}".')));
     } on ApiError catch (e) {
-      if (mounted) setState(() => _formError = e.message);
+      if (mounted) messenger.showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -196,10 +193,7 @@ class _LanguagesSectionState extends State<LanguagesSection> {
     if (row.id == null) return;
     final bloc = context.read<ProfileBloc>();
     final messenger = ScaffoldMessenger.of(context);
-    setState(() {
-      _busy = true;
-      _formError = null;
-    });
+    setState(() => _busy = true);
     try {
       await bloc.repository.languagesApi.update(row.id!, {
         'proficiency_level': res.proficiency,
@@ -214,7 +208,7 @@ class _LanguagesSectionState extends State<LanguagesSection> {
       bloc.add(ProfileLanguagesReplaced(fresh));
       messenger.showSnackBar(const SnackBar(content: Text('Saved.')));
     } on ApiError catch (e) {
-      if (mounted) setState(() => _formError = e.message);
+      if (mounted) messenger.showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -240,9 +234,19 @@ class _LanguagesSectionState extends State<LanguagesSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('Languages')),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      floatingActionButton: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (_, state) {
+          if (!state.isLoaded || state.bundle == null) return const SizedBox.shrink();
+          return FloatingActionButton.extended(
+            icon: const Icon(Icons.add),
+            label: const Text('Add language'),
+            onPressed: _busy ? null : () => _openAddPicker(state.bundle!.languages),
+          );
+        },
+      ),
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (!state.isLoaded || state.bundle == null) {
             return const Center(child: CircularProgressIndicator());
@@ -260,16 +264,6 @@ class _LanguagesSectionState extends State<LanguagesSection> {
                       onTap: _busy ? null : () => _openEdit(list[i]),
                     ),
                   ),
-          );
-        },
-      ),
-      floatingActionButton: BlocBuilder<ProfileBloc, ProfileState>(
-        builder: (_, state) {
-          if (!state.isLoaded || state.bundle == null) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            icon: const Icon(Icons.add),
-            label: const Text('Add language'),
-            onPressed: _busy ? null : () => _openAddPicker(state.bundle!.languages),
           );
         },
       ),

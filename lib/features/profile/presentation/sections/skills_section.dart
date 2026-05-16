@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/network/api_error.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../bloc/profile_bloc.dart';
 import '../../bloc/profile_event.dart';
 import '../../bloc/profile_state.dart';
@@ -165,9 +166,19 @@ class _SkillsSectionState extends State<SkillsSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('Skills')),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      floatingActionButton: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (_, state) {
+          if (!state.isLoaded || state.bundle == null) return const SizedBox.shrink();
+          return FloatingActionButton.extended(
+            icon: const Icon(Icons.add),
+            label: const Text('Add skill'),
+            onPressed: _busy ? null : () => _openAddPicker(state.bundle!.skills),
+          );
+        },
+      ),
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (!state.isLoaded || state.bundle == null) {
             return const Center(child: CircularProgressIndicator());
@@ -211,16 +222,6 @@ class _SkillsSectionState extends State<SkillsSection> {
                   ),
               ],
             ),
-          );
-        },
-      ),
-      floatingActionButton: BlocBuilder<ProfileBloc, ProfileState>(
-        builder: (_, state) {
-          if (!state.isLoaded || state.bundle == null) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            icon: const Icon(Icons.add),
-            label: const Text('Add skill'),
-            onPressed: _busy ? null : () => _openAddPicker(state.bundle!.skills),
           );
         },
       ),

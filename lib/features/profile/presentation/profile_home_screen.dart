@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/widgets/branded_scaffold.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_event.dart';
 import '../../auth/bloc/auth_state.dart';
@@ -45,18 +46,43 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(
         title: const Text('My profile'),
+        // Explicit back leading — the auto-back arrow inserted by
+        // AppBar relies on `ModalRoute.canPop`, which can return
+        // `false` inside a go_router ShellRoute (the shell wraps its
+        // own nested navigator). Wiring our own IconButton that
+        // checks `context.canPop` first, then falls back to
+        // `context.go('/home')`, makes the back tap reliable.
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
         actions: [
           IconButton(
             tooltip: 'Sign out',
             icon: const Icon(Icons.logout),
-            onPressed: () => context.read<AuthBloc>().add(const AuthLoggedOut()),
+            onPressed: () {
+              // Dispatch the bloc event AND explicitly navigate.
+              // The router's refreshListenable should bounce us off
+              // /profile when state flips to unauthenticated, but
+              // we've seen the redirect occasionally miss; the
+              // explicit `go('/home')` makes logout deterministic.
+              context.read<AuthBloc>().add(const AuthLoggedOut());
+              context.go('/home');
+            },
           ),
         ],
       ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (state.status == ProfileStatus.error) {
             return _ErrorView(

@@ -215,7 +215,7 @@ class AuthApi {
   /// `user_roles`. Retried up to 3 times with exponential backoff so
   /// flaky networks don't leave the user role-less.
   Future<Map<String, dynamic>> assignMyRole(SelfAssignableRole role) async {
-    final delays = const [Duration.zero, Duration(milliseconds: 400), Duration(milliseconds: 1200)];
+    const delays = [Duration.zero, Duration(milliseconds: 400), Duration(milliseconds: 1200)];
     Object? lastErr;
     for (var i = 0; i < delays.length; i++) {
       if (delays[i] > Duration.zero) await Future.delayed(delays[i]);

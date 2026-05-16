@@ -16,6 +16,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/validation/form_validators.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
 import '../../bloc/profile_bloc.dart';
@@ -90,9 +91,9 @@ class _ContactSectionState extends State<ContactSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('Contact')),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (!state.isLoaded || state.bundle == null) {
             return const Center(child: CircularProgressIndicator());

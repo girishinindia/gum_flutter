@@ -19,6 +19,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_error.dart';
 import '../../../core/validation/form_validators.dart';
+import '../../../shared/widgets/branded_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import '../data/auth_api.dart';
 import 'register_pending_state.dart';
@@ -98,31 +99,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Create account')),
-      body: SafeArea(
+    return BrandedScaffold(
+      hero: true,
+      title:    'Start your journey',
+      subtitle: "We'll send a 6-digit code to your email and mobile to verify both.",
+      child: SingleChildScrollView(
+        // Halved vertical padding so the form card sits closer to the
+        // aurora hero (was 16 → now 8) — matches the gap tightening
+        // we applied to the forgot-password screen.
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: _Card(
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Start your journey',
-                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "We'll send a 6-digit code to your email and mobile to verify both.",
-                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
 
                     // Name pair
                     Row(
@@ -291,6 +285,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ],
 
+                    // 30-pt breathing room between the Terms checkbox
+                    // (or error banner) and the primary CTA so the
+                    // button doesn't look glued to the form.
+                    const SizedBox(height: 30),
                     FilledButton(
                       onPressed: _submitting ? null : _submit,
                       style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(50)),
@@ -326,6 +324,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Floating white card matching the home page's elevated surfaces.
+class _Card extends StatelessWidget {
+  const _Card({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+            blurRadius: 28,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

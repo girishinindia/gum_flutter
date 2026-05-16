@@ -11,9 +11,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/validation/form_validators.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_event.dart';
 import '../../../auth/presentation/widgets/otp_input_field.dart';
@@ -176,7 +178,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         messenger.showSnackBar(const SnackBar(
           content: Text('Password updated. Please sign in again.'),
         ));
-        // The router redirect handles the bounce to /login.
+        // Explicit navigation — the refreshListenable redirect has
+        // proven unreliable, so we kick the user to /login directly.
+        GoRouter.of(context).go('/login');
       } else {
         messenger.showSnackBar(const SnackBar(content: Text('Password updated.')));
         Navigator.of(context).maybePop();
@@ -190,7 +194,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(
         title: const Text('Change password'),
         leading: _step == _PwStep.enterOld
@@ -201,7 +205,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 onPressed: _submitting ? null : () => Navigator.of(context).maybePop(),
               ),
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: switch (_step) {

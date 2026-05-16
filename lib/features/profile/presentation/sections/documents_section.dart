@@ -22,6 +22,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/validation/form_validators.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../bloc/profile_bloc.dart';
 import '../../bloc/profile_event.dart';
 import '../../bloc/profile_state.dart';
@@ -36,14 +37,14 @@ class DocumentsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('Documents')),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.upload_file),
         label: const Text('Upload'),
         onPressed: () => _openForm(context, null),
       ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (!state.isLoaded || state.bundle == null) {
             return const Center(child: CircularProgressIndicator());
@@ -447,7 +448,7 @@ class _DocumentFormScreenState extends State<_DocumentFormScreen> {
     final docsForType = _type == null ? const <MasterDocument>[] : (_docsByType[_type!.id] ?? const []);
     final docsLoading = _type != null && _docsLoadingFor.contains(_type!.id);
     final hasExistingFile = (widget.existing?.file ?? '').isNotEmpty;
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(
         title: Text(isEdit ? 'Edit document' : 'Upload document'),
         actions: [
@@ -458,7 +459,7 @@ class _DocumentFormScreenState extends State<_DocumentFormScreen> {
             ),
         ],
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(

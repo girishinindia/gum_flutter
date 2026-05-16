@@ -50,7 +50,11 @@ class SearchableSelect<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final selectedLabel = selectedItem != null ? labelOf(selectedItem!) : null;
+    // Promote `selectedItem` to a local non-null var so we can call
+    // `labelOf` without a bang on a (potentially nullable) type
+    // parameter — keeps `null_check_on_nullable_type_parameter` happy.
+    final sel = selectedItem;
+    final selectedLabel = sel == null ? null : labelOf(sel);
     return InkWell(
       onTap: (enabled && !isLoading) ? () => _openPicker(context) : null,
       borderRadius: BorderRadius.circular(8),

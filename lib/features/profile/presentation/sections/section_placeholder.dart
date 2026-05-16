@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../profile_section_meta.dart';
 
 class ProfileSectionPlaceholder extends StatelessWidget {
@@ -20,9 +21,9 @@ class ProfileSectionPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: Text(section.title)),
-      body: SafeArea(
+      child: SafeArea(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

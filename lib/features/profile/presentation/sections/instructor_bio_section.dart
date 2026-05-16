@@ -17,8 +17,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/validation/form_validators.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../../auth/bloc/auth_bloc.dart';
-import '../../../auth/bloc/auth_state.dart';
 import '../../bloc/profile_bloc.dart';
 import '../../bloc/profile_event.dart';
 import '../../bloc/profile_state.dart';
@@ -108,9 +108,9 @@ class _InstructorBioSectionState extends State<InstructorBioSection> {
       WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/profile'));
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('Instructor bio')),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (!state.isLoaded || state.bundle == null) {
             return const Center(child: CircularProgressIndicator());
@@ -256,12 +256,12 @@ class _StatsBlock extends StatelessWidget {
               ),
               const Spacer(),
               if (verified)
-                Padding(
-                  padding: const EdgeInsets.only(right: 6),
+                const Padding(
+                  padding: EdgeInsets.only(right: 6),
                   child: _StatusChip(label: 'Verified', icon: Icons.verified, isPositive: true),
                 ),
               if (featured)
-                _StatusChip(label: 'Featured', icon: Icons.star, isPositive: true),
+                const _StatusChip(label: 'Featured', icon: Icons.star, isPositive: true),
             ],
           ),
           const SizedBox(height: 14),

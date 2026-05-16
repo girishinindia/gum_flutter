@@ -94,8 +94,8 @@ class _OtpInputFieldState extends State<OtpInputField> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final boxSize = 46.0;
-    final gap     = 8.0;
+    const boxSize = 46.0;
+    const gap     = 8.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -115,7 +115,7 @@ class _OtpInputFieldState extends State<OtpInputField> {
                       error:   widget.error != null,
                       size:    boxSize,
                     ),
-                    if (i < widget.length - 1) SizedBox(width: gap),
+                    if (i < widget.length - 1) const SizedBox(width: gap),
                   ],
                 ],
               ),

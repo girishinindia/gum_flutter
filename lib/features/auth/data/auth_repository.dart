@@ -13,10 +13,15 @@ import 'dart:async';
 
 import '../../../core/auth/session_storage.dart';
 import '../../profile/data/users_api.dart';
-import '../domain/auth_tokens.dart';
 import '../domain/auth_user.dart';
 import '../domain/otp_models.dart';
 import 'auth_api.dart';
+
+// Re-export so callers only need to import the repository to get
+// both the AuthRepository class and the SelfAssignableRole enum.
+// `export` directives must appear in the directive section (above
+// the first declaration) — see analyzer rule `directives_ordering`.
+export 'auth_api.dart' show SelfAssignableRole;
 
 class AuthRepository {
   AuthRepository({
@@ -259,6 +264,3 @@ class AuthRepository {
     _sessionCtl.add(null);
   }
 }
-
-// Re-export the role enum so callers only need to import the repository.
-export 'auth_api.dart' show SelfAssignableRole;

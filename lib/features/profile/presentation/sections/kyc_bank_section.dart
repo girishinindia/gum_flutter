@@ -17,6 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/validation/form_validators.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../bloc/profile_bloc.dart';
 import '../../bloc/profile_event.dart';
 import '../../bloc/profile_state.dart';
@@ -118,9 +119,9 @@ class _KycBankSectionState extends State<KycBankSection> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('KYC & Bank')),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (!state.isLoaded || state.bundle == null) {
             return const Center(child: CircularProgressIndicator());

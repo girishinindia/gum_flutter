@@ -8,11 +8,13 @@
 // Focus management: TabBarView builds both panes eagerly, so we drive
 // focus from a TabController listener and disable per-field autofocus.
 
+import 'package:flutter/foundation.dart';  // ValueListenable
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_error.dart';
+import '../../../shared/widgets/branded_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import 'reset_pending_state.dart';
 import 'widgets/otp_input_field.dart';
@@ -73,8 +75,11 @@ class _ResetOtpScreenState extends State<ResetOtpScreen> with SingleTickerProvid
     if (otp.length != 6) return;
     setState(() {
       _submitting = true;
-      if (channel == 'email')  _emailError  = null;
-      else                     _mobileError = null;
+      if (channel == 'email') {
+        _emailError = null;
+      } else {
+        _mobileError = null;
+      }
     });
     _busy.value = true;
     final bloc = context.read<AuthBloc>();
@@ -105,14 +110,20 @@ class _ResetOtpScreenState extends State<ResetOtpScreen> with SingleTickerProvid
     } on ApiError catch (e) {
       if (!mounted) return;
       setState(() {
-        if (channel == 'email')  _emailError  = e.message;
-        else                     _mobileError = e.message;
+        if (channel == 'email') {
+          _emailError = e.message;
+        } else {
+          _mobileError = e.message;
+        }
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        if (channel == 'email')  _emailError  = 'Something went wrong. Try again.';
-        else                     _mobileError = 'Something went wrong. Try again.';
+        if (channel == 'email') {
+          _emailError = 'Something went wrong. Try again.';
+        } else {
+          _mobileError = 'Something went wrong. Try again.';
+        }
       });
     } finally {
       if (mounted) {
@@ -148,7 +159,7 @@ class _ResetOtpScreenState extends State<ResetOtpScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(
         title: const Text('Verify your identity'),
         bottom: TabBar(
@@ -159,7 +170,7 @@ class _ResetOtpScreenState extends State<ResetOtpScreen> with SingleTickerProvid
           ],
         ),
       ),
-      body: TabBarView(
+      child: TabBarView(
         controller: _tabs,
         children: [
           _ResetChannelPane(

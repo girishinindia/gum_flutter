@@ -15,11 +15,13 @@
 // disable `autofocus` on the OTP fields and instead drive focus from
 // a TabController listener — the active tab's field always has focus.
 
+import 'package:flutter/foundation.dart';  // ValueListenable
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_error.dart';
+import '../../../shared/widgets/branded_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -84,8 +86,11 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> with SingleTicker
     if (otp.length != 6) return;
     setState(() {
       _submitting = true;
-      if (channel == 'email')  _emailError  = null;
-      else                     _mobileError = null;
+      if (channel == 'email') {
+        _emailError = null;
+      } else {
+        _mobileError = null;
+      }
     });
     _busy.value = true;
     // Capture handles before await so we don't reach across an
@@ -114,8 +119,11 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> with SingleTicker
       // Partial — flip this channel to verified and switch tabs to
       // the other one if not yet done.
       setState(() {
-        if (channel == 'email')  _emailVerified  = true;
-        else                     _mobileVerified = true;
+        if (channel == 'email') {
+          _emailVerified = true;
+        } else {
+          _mobileVerified = true;
+        }
       });
       if (channel == 'email' && !_mobileVerified) {
         _tabs.animateTo(1);
@@ -125,14 +133,20 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> with SingleTicker
     } on ApiError catch (e) {
       if (!mounted) return;
       setState(() {
-        if (channel == 'email')  _emailError  = e.message;
-        else                     _mobileError = e.message;
+        if (channel == 'email') {
+          _emailError = e.message;
+        } else {
+          _mobileError = e.message;
+        }
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        if (channel == 'email')  _emailError  = 'Something went wrong. Try again.';
-        else                     _mobileError = 'Something went wrong. Try again.';
+        if (channel == 'email') {
+          _emailError = 'Something went wrong. Try again.';
+        } else {
+          _mobileError = 'Something went wrong. Try again.';
+        }
       });
     } finally {
       if (mounted) {
@@ -176,7 +190,7 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> with SingleTicker
         // Router redirect will move us to /home — safety net.
         ctx.go('/home');
       },
-      child: Scaffold(
+      child: BrandedScaffold(
         appBar: AppBar(
           title: const Text('Verify your account'),
           bottom: TabBar(
@@ -187,7 +201,7 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> with SingleTicker
             ],
           ),
         ),
-        body: TabBarView(
+        child: TabBarView(
           controller: _tabs,
           children: [
             _ChannelPane(

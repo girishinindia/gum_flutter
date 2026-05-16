@@ -61,9 +61,27 @@ import '../../features/profile/presentation/sections/social_links_section.dart';
 // future deferred-section work can re-import it without scaffolding.
 import '../../features/splash/presentation/splash_screen.dart';
 
-/// Public (unauthenticated-allowed) route locations.
+/// Routes that an unauthenticated user is allowed to visit. Anything
+/// not in this set forces a redirect to /login.
+///
+/// `/home` IS public: the home screen renders a signed-out variant
+/// (Sign in CTA in the drawer, no stats row) when there's no session.
+/// Only `/profile/*` actually requires auth.
 const _publicLocations = {
   '/',
+  '/login',
+  '/register',
+  '/register/verify',
+  '/forgot',
+  '/forgot/verify',
+  '/forgot/reset',
+  '/home',
+};
+
+/// Routes a signed-in user should be bounced away from. Hitting any
+/// of these while authenticated lands the user back on /home so they
+/// can never see the login / register forms when they're already in.
+const _authOnlyBlockedForSignedIn = {
   '/login',
   '/register',
   '/register/verify',
@@ -86,16 +104,23 @@ GoRouter buildAppRouter(AuthBloc bloc) {
         return going == '/' ? null : '/';
       }
 
-      final isPublic = _publicLocations.contains(going);
+      // Everyone leaves the splash for /home once bootstrap finishes.
+      // Signed-out users see the signed-out variant of home; signed-in
+      // users see the personalised variant. The drawer's "Sign in"
+      // CTA is how an unauthenticated user opts into the login flow.
+      if (going == '/') return '/home';
 
-      if (state.status == AuthStatus.unauthenticated) {
-        if (going == '/') return '/login';
-        return isPublic ? null : '/login';
+      if (state.status == AuthStatus.authenticated) {
+        // Already signed in — keep them away from the auth screens.
+        if (_authOnlyBlockedForSignedIn.contains(going)) return '/home';
+        return null;
       }
 
-      // Authenticated.
-      if (isPublic) return '/home';
-      return null;
+      // Unauthenticated. Public routes (incl. /home) are OK; anything
+      // else (currently /profile/*) bounces to /login so the user can
+      // sign in before reaching protected content.
+      if (_publicLocations.contains(going)) return null;
+      return '/login';
     },
     routes: [
       GoRoute(path: '/',         builder: (_, __) => const SplashScreen()),

@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_error.dart';
 import '../../../core/validation/form_validators.dart';
+import '../../../shared/widgets/branded_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -45,7 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _submitting = true);
-    final bloc = context.read<AuthBloc>();
+    // Capture before await so we don't reach across an async gap.
+    final bloc   = context.read<AuthBloc>();
+    final router = GoRouter.of(context);
     try {
       final user = await bloc.repository.login(
         identifier: _identifierCtl.text.trim(),
@@ -53,7 +56,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (!mounted) return;
       bloc.add(AuthLoggedIn(user));
-      // go_router's redirect will move us to /home automatically.
+      // The router's refreshListenable should pick up the bloc's new
+      // state and redirect /login → /home, but we also call go()
+      // explicitly so a stale listener (or a missed notify) doesn't
+      // leave the user stuck on this screen.
+      router.go('/home');
     } on ApiError catch (e) {
       if (!mounted) return;
       setState(() => _formError = e.message);
@@ -68,13 +75,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      body: SafeArea(
+    return BrandedScaffold(
+      hero: true,
+      title:    'Welcome back',
+      subtitle: 'Sign in to continue your learning journey.',
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: _Card(
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -93,19 +103,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                     ),
-
-                    Text(
-                      'Welcome back',
-                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Sign in to continue your learning journey.',
-                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 28),
 
                     // Identifier (email or mobile)
                     TextFormField(
@@ -200,6 +197,35 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Floating white card that hosts the form content under the
+/// BrandedScaffold's aurora hero. Keeps the form legible against the
+/// gradient and gives auth screens the same elevated-card feel as the
+/// home page's offers carousel + featured card.
+class _Card extends StatelessWidget {
+  const _Card({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+            blurRadius: 28,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

@@ -16,6 +16,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/validation/form_validators.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../bloc/profile_bloc.dart';
 import '../../bloc/profile_event.dart';
 import '../../bloc/profile_state.dart';
@@ -26,14 +27,14 @@ class ProjectsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('Projects')),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
         label: const Text('Add'),
         onPressed: () => _openForm(context, null),
       ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (!state.isLoaded || state.bundle == null) {
             return const Center(child: CircularProgressIndicator());
@@ -305,7 +306,7 @@ class _ProjectFormScreenState extends State<_ProjectFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.existing != null;
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(
         title: Text(isEdit ? 'Edit project' : 'Add project'),
         actions: [
@@ -316,7 +317,7 @@ class _ProjectFormScreenState extends State<_ProjectFormScreen> {
             ),
         ],
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(

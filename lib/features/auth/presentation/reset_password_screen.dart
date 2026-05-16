@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_error.dart';
 import '../../../core/validation/form_validators.dart';
+import '../../../shared/widgets/branded_scaffold.dart';
 import '../bloc/auth_bloc.dart';
 import 'reset_pending_state.dart';
 
@@ -72,33 +73,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/forgot'));
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return Scaffold(
-      appBar: AppBar(title: const Text('Set new password')),
-      body: SafeArea(
+    return BrandedScaffold(
+      hero: true,
+      title:    'Pick a strong password',
+      subtitle: '8–20 characters. Mix letters, numbers and symbols.',
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: _Card(
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(Icons.password, size: 48, color: theme.colorScheme.primary),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Pick a strong password',
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '8–20 characters. Mix letters, numbers and symbols.',
-                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
                     TextFormField(
                       controller: _passCtl,
                       obscureText: _obscurePass,
@@ -176,6 +165,32 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Floating white card matching the home page's elevated surfaces.
+class _Card extends StatelessWidget {
+  const _Card({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
+            blurRadius: 28,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

@@ -6,7 +6,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_event.dart';
 import '../../../auth/bloc/auth_state.dart';
@@ -19,9 +21,9 @@ class SecuritySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('Security')),
-      body: BlocBuilder<AuthBloc, AuthState>(
+      child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           final u = state.user;
           return SafeArea(
@@ -100,6 +102,7 @@ class SecuritySection extends StatelessWidget {
                     );
                     if (!context.mounted || confirm != true) return;
                     context.read<AuthBloc>().add(const AuthLoggedOut());
+                    context.go('/home');
                   },
                 ),
               ],

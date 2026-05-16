@@ -12,9 +12,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/validation/form_validators.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_event.dart';
 import '../../../auth/presentation/widgets/otp_input_field.dart';
@@ -123,13 +125,16 @@ class _ChangeContactScreenState extends State<ChangeContactScreen> {
       if (loggedOut) {
         // Server already invalidated the session — wipe locally and
         // dispatch `expired: true` so the bloc skips the redundant
-        // server logout call.
+        // server logout call. Then explicitly route to /login so the
+        // user isn't stranded on the change screen if the redirect
+        // listener misses the bloc emission.
         await bloc.repository.wipeSessionLocally();
         if (!mounted) return;
         bloc.add(const AuthLoggedOut(expired: true));
         messenger.showSnackBar(SnackBar(
           content: Text('Your ${widget.kind.verbalUnit} was updated. Please sign in again.'),
         ));
+        GoRouter.of(context).go('/login');
       } else {
         messenger.showSnackBar(SnackBar(
           content: Text('Your ${widget.kind.verbalUnit} was updated.'),
@@ -164,7 +169,7 @@ class _ChangeContactScreenState extends State<ChangeContactScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(
         title: Text(widget.kind.title),
         leading: _step == _Step.enterValue
@@ -175,7 +180,7 @@ class _ChangeContactScreenState extends State<ChangeContactScreen> {
                 onPressed: _submitting ? null : () => Navigator.of(context).maybePop(),
               ),
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: switch (_step) {

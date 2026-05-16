@@ -21,6 +21,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/network/api_error.dart';
 import '../../../../core/validation/form_validators.dart';
+import '../../../../shared/widgets/branded_scaffold.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
 import '../../bloc/profile_bloc.dart';
@@ -47,8 +48,6 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   bool    _submitting   = false;
   bool    _hydrated     = false;
   String? _formError;
-
-  static const _genders = <String>['male', 'female', 'other', 'prefer_not_to_say'];
 
   @override
   void dispose() {
@@ -139,9 +138,9 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
+    return BrandedScaffold(
       appBar: AppBar(title: const Text('Basic information')),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (state.status == ProfileStatus.loading || state.status == ProfileStatus.initial) {
             return const Center(child: CircularProgressIndicator());
