@@ -573,7 +573,14 @@ class _EducationFormScreenState extends State<_EducationFormScreen> {
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Currently studying'),
                   value: _isCurrentlyStudying,
-                  onChanged: (v) => setState(() => _isCurrentlyStudying = v),
+                  onChanged: (v) => setState(() {
+                    _isCurrentlyStudying = v;
+                    // Phase 35.2 mirror of the web fix — when the toggle
+                    // goes ON, clear the local end-date text so a later
+                    // submit cannot accidentally ship a stale date.
+                    // (The API also enforces this invariant.)
+                    if (v) _endCtl.text = '';
+                  }),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
