@@ -116,7 +116,7 @@ class AppTheme {
       dropdownMenuTheme: DropdownMenuThemeData(
         textStyle: GoogleFonts.outfit(fontSize: 14, color: AppColors.slate900),
         menuStyle: MenuStyle(
-          backgroundColor: WidgetStatePropertyAll(Colors.white),
+          backgroundColor: const WidgetStatePropertyAll(Colors.white),
           surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
           elevation: const WidgetStatePropertyAll(3),
           shape: WidgetStatePropertyAll(

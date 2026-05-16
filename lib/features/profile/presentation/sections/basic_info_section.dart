@@ -125,7 +125,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
             ? 'Camera access is off. Enable it in Settings to take a photo.'
             : 'Photo library access is off. Enable it in Settings to pick a photo.',
         ),
-        action: SnackBarAction(
+        action: const SnackBarAction(
           label: 'Open Settings',
           onPressed: AppPermissions.openSettings,
         ),
@@ -223,8 +223,8 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     // Capture local copies — Dart's flow analysis doesn't promote
     // through `setState` closures, and we read these again post-await.
     final pickedPath     = edited.path;
-    final pickedName     = 'avatar.jpg';
-    final pickedMimeType = 'image/jpeg';
+    const pickedName     = 'avatar.jpg';
+    const pickedMimeType = 'image/jpeg';
 
     setState(() {
       _pickedAvatarPath = pickedPath;
@@ -249,12 +249,14 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
       if (!mounted) return;
       setState(() => _avatarError = "Couldn't upload photo. Please try again.");
     } finally {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _avatarUploading = false;
         // Drop the local preview — the bundle.profile.profileImageUrl
         // now points at the persisted CDN URL.
         _pickedAvatarPath = null;
       });
+      }
     }
   }
 

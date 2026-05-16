@@ -278,7 +278,7 @@ class _ProjectFormScreenState extends State<_ProjectFormScreen> {
   Future<void> _confirmDelete() async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: const Text('Delete project?'),
         content: const Text('This project will be removed permanently.'),
         actions: [

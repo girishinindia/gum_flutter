@@ -333,7 +333,7 @@ class _ExperienceFormScreenState extends State<_ExperienceFormScreen> {
   Future<void> _confirmDelete() async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: const Text('Delete role?'),
         content: const Text('This experience entry will be removed permanently.'),
         actions: [

@@ -417,7 +417,7 @@ class _DocumentFormScreenState extends State<_DocumentFormScreen> {
   Future<void> _confirmDelete() async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: const Text('Delete document?'),
         content: const Text('This document will be removed permanently.'),
         actions: [
