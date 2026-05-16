@@ -194,7 +194,14 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? Colors.white : Colors.white.withValues(alpha: 0.72);
+    // Selected: opaque white. Unselected: bumped from 0.72 → 0.88 so
+    // labels stay readable on the brighter pastel-bottomed gradients
+    // (Sunshine, Champagne, Aqua Mint, Peach Rose). Font weight is
+    // also lifted to w600 on unselected (see below) so the slightly
+    // smaller chroma difference is offset by stroke weight.
+    final color = isSelected
+        ? Colors.white
+        : Colors.white.withValues(alpha: 0.88);
 
     return InkResponse(
       onTap: onTap,
@@ -240,7 +247,10 @@ class _NavItem extends StatelessWidget {
               item.label,
               style: AppTypography.caption.copyWith(
                 color: color,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                // w600 (was w500) on unselected — heavier stroke makes
+                // labels read as confidently on pastel-bottomed themes
+                // where pure-white text loses contrast.
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                 fontSize: 10.5,
                 letterSpacing: 0.1,
               ),

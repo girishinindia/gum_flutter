@@ -104,7 +104,10 @@ class HomeRepository {
     MenuAction(label: t.drawerHelp,          icon: Icons.help_outline_rounded,    iconColor: AppColors.slate600),
   ];
 
-  // ── User snapshot (would come from /auth/me later) ───────────────
+  // ── User snapshot (fallback only) ────────────────────────────────
+  // Real values come from AuthBloc.state.user (read in HomeScreen).
+  // These literals are only used when the bloc hasn't loaded yet
+  // (e.g. during the brief unknown → authenticated transition).
   String get userFirstName => 'Manshi';
   String get userLastName  => 'Khunt';
   String get userInitial   => userFirstName[0];

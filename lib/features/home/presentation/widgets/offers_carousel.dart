@@ -36,6 +36,10 @@ class OffersCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Eyebrow + title flip colour per active theme — same logic as
+    // SectionHeader. Eyebrow goes from sky-700 (light) → sky-300 (dark);
+    // title goes from slate-900 (light) → slate-50 (dark).
+    final palette = context.watch<ThemeController>().palette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -53,9 +57,16 @@ class OffersCarousel extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('TOP PICKS', style: AppTypography.eyebrow),
+                  Text(
+                    'TOP PICKS',
+                    style: AppTypography.eyebrow
+                        .copyWith(color: palette.accentOnPageBg),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Popular Courses', style: AppTypography.h2),
+                  Text(
+                    'Popular Courses',
+                    style: AppTypography.h2.copyWith(color: palette.onPageBg),
+                  ),
                 ],
               ),
               const Spacer(),

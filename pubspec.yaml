@@ -34,9 +34,45 @@ dependencies:
   # Mirrors the gum_web architecture: HTTP via dio, state via plain
   # ChangeNotifier through provider, language ISO persisted to
   # SharedPreferences (key `gum_flutter.lang`).
+  #
+  # Note: `provider` is kept for the LanguageController + CategoriesController
+  # legacy plumbing. New work (auth + profile) uses `flutter_bloc` instead.
   dio:                ^5.7.0
   provider:           ^6.1.2
   shared_preferences: ^2.3.2
+
+  # ── Auth + profile (Phase A foundation) ──────────────────────────────
+  # Enterprise-grade state with explicit events and immutable states.
+  # `equatable` powers cheap state equality checks so BlocBuilder/Listener
+  # only rebuilds when something meaningful changed.
+  flutter_bloc:           ^8.1.6
+  bloc:                   ^8.1.4
+  equatable:              ^2.0.5
+
+  # Secure on-device storage for tokens (Keychain on iOS, EncryptedSharedPrefs
+  # on Android). Replaces localStorage from the web client.
+  flutter_secure_storage: ^9.2.2
+
+  # Declarative routing with an auth-gate redirect. The MaterialApp.router
+  # entry replaces the old `home: SplashScreen()` setup.
+  go_router:              ^14.6.1
+
+  # Profile uploads — image_picker for avatar / education certificate
+  # photos, file_picker for PDF documents.
+  image_picker:           ^1.1.2
+  file_picker:            ^8.1.4
+
+  # MediaType helper for setting the multipart Content-Type on uploads.
+  # Available transitively via dio but declared explicitly here to
+  # satisfy `depend_on_referenced_packages` and survive dio bumps.
+  http_parser:            ^4.0.2
+
+  # Date formatting + parsing (start_date / end_date inputs across
+  # education, experience, projects).
+  intl:                   ^0.19.0
+
+  # PKCE / hash helpers — keeps the door open for OAuth flows later.
+  crypto:                 ^3.0.5
 
 dev_dependencies:
   flutter_test:

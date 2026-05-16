@@ -85,6 +85,10 @@ class ThemePresets {
     // Aurora's pageBg is light → slate-900 reads on it.
     onPageBg:           Color(0xFF0F172A),
     onPageBgMuted:      Color(0xFF64748B),
+    // Eyebrow on page bg stays sky-700 (same hue as the original
+    // hard-coded AppColors.brand700, so every light theme — Aurora
+    // included — looks identical).
+    accentOnPageBg:      Color(0xFF0369A1),
     // Light theme — chrome stays white so the drawer + app bar look
     // exactly as they did before themes existed (Aurora identity).
     chromeSurface:       Colors.white,
@@ -137,6 +141,7 @@ class ThemePresets {
     heroSurfaceBorder:  Color(0x330F172A), // slate @ 20 %
     onPageBg:           Color(0xFF0F172A),
     onPageBgMuted:      Color(0xFF64748B),
+    accentOnPageBg:     Color(0xFF0369A1),
     chromeSurface:       Colors.white,
     chromeSurfaceMuted:  Color(0xFFF1F5F9),
     chromeOutline:       Color(0xFFE2E8F0),
@@ -187,6 +192,10 @@ class ThemePresets {
     // Light pastel page-bg → dark text reads on it.
     onPageBg:           Color(0xFF0F172A),
     onPageBgMuted:      Color(0xFF64748B),
+    // Eyebrow on page bg stays sky-700 (same hue as the original
+    // hard-coded AppColors.brand700, so every light theme — Aurora
+    // included — looks identical).
+    accentOnPageBg:      Color(0xFF0369A1),
     // Light theme — chrome stays white so the drawer + app bar look
     // exactly as they did before themes existed (Aurora identity).
     chromeSurface:       Colors.white,
@@ -239,6 +248,10 @@ class ThemePresets {
     // Light pastel page-bg → dark text reads on it.
     onPageBg:           Color(0xFF0F172A),
     onPageBgMuted:      Color(0xFF64748B),
+    // Eyebrow on page bg stays sky-700 (same hue as the original
+    // hard-coded AppColors.brand700, so every light theme — Aurora
+    // included — looks identical).
+    accentOnPageBg:      Color(0xFF0369A1),
     // Light theme — chrome stays white so the drawer + app bar look
     // exactly as they did before themes existed (Aurora identity).
     chromeSurface:       Colors.white,
@@ -291,6 +304,10 @@ class ThemePresets {
     // Light pastel page-bg → dark text reads on it.
     onPageBg:           Color(0xFF0F172A),
     onPageBgMuted:      Color(0xFF64748B),
+    // Eyebrow on page bg stays sky-700 (same hue as the original
+    // hard-coded AppColors.brand700, so every light theme — Aurora
+    // included — looks identical).
+    accentOnPageBg:      Color(0xFF0369A1),
     // Light theme — chrome stays white so the drawer + app bar look
     // exactly as they did before themes existed (Aurora identity).
     chromeSurface:       Colors.white,
@@ -344,6 +361,10 @@ class ThemePresets {
     // Page bg stays light (Ocean is light-mode with a dark hero only).
     onPageBg:           Color(0xFF0F172A),
     onPageBgMuted:      Color(0xFF64748B),
+    // Eyebrow on page bg stays sky-700 (same hue as the original
+    // hard-coded AppColors.brand700, so every light theme — Aurora
+    // included — looks identical).
+    accentOnPageBg:      Color(0xFF0369A1),
     // Light theme — chrome stays white so the drawer + app bar look
     // exactly as they did before themes existed (Aurora identity).
     chromeSurface:       Colors.white,
@@ -396,6 +417,10 @@ class ThemePresets {
     // Light pastel page-bg → dark text reads on it.
     onPageBg:           Color(0xFF0F172A),
     onPageBgMuted:      Color(0xFF64748B),
+    // Eyebrow on page bg stays sky-700 (same hue as the original
+    // hard-coded AppColors.brand700, so every light theme — Aurora
+    // included — looks identical).
+    accentOnPageBg:      Color(0xFF0369A1),
     // Light theme — chrome stays white so the drawer + app bar look
     // exactly as they did before themes existed (Aurora identity).
     chromeSurface:       Colors.white,
@@ -448,6 +473,10 @@ class ThemePresets {
     // Light pastel page-bg → dark text reads on it.
     onPageBg:           Color(0xFF0F172A),
     onPageBgMuted:      Color(0xFF64748B),
+    // Eyebrow on page bg stays sky-700 (same hue as the original
+    // hard-coded AppColors.brand700, so every light theme — Aurora
+    // included — looks identical).
+    accentOnPageBg:      Color(0xFF0369A1),
     // Light theme — chrome stays white so the drawer + app bar look
     // exactly as they did before themes existed (Aurora identity).
     chromeSurface:       Colors.white,
@@ -503,6 +532,9 @@ class ThemePresets {
     // Dark page-bg → near-white text + soft slate-300 secondary.
     onPageBg:           Color(0xFFF8FAFC),
     onPageBgMuted:      Color(0xFFCBD5E1),
+    // Eyebrow on page bg → bright sky-300 so the small uppercase tag
+    // pops against the dark scaffold (sky-700 was getting lost).
+    accentOnPageBg:      Color(0xFF7DD3FC),
     // Dark theme — chrome flips to deep slate so the drawer + app bar
     // read as "dark mode" alongside the dark hero. SVG wordmark + all
     // foreground text/icons switch to near-white via `onChrome`.
@@ -556,6 +588,9 @@ class ThemePresets {
     // Dark page-bg → near-white text + soft slate-300 secondary.
     onPageBg:           Color(0xFFF8FAFC),
     onPageBgMuted:      Color(0xFFCBD5E1),
+    // Eyebrow on page bg → bright sky-300 so the small uppercase tag
+    // pops against the dark scaffold (sky-700 was getting lost).
+    accentOnPageBg:      Color(0xFF7DD3FC),
     // Dark theme — chrome flips to deep slate so the drawer + app bar
     // read as "dark mode" alongside the dark hero. SVG wordmark + all
     // foreground text/icons switch to near-white via `onChrome`.
@@ -611,6 +646,9 @@ class ThemePresets {
     // Dark page-bg → near-white text + soft slate-300 secondary.
     onPageBg:           Color(0xFFF8FAFC),
     onPageBgMuted:      Color(0xFFCBD5E1),
+    // Eyebrow on page bg → bright sky-300 so the small uppercase tag
+    // pops against the dark scaffold (sky-700 was getting lost).
+    accentOnPageBg:      Color(0xFF7DD3FC),
     // Dark theme — chrome flips to deep slate so the drawer + app bar
     // read as "dark mode" alongside the dark hero. SVG wordmark + all
     // foreground text/icons switch to near-white via `onChrome`.
@@ -664,6 +702,9 @@ class ThemePresets {
     // Dark page-bg → near-white text + soft slate-300 secondary.
     onPageBg:           Color(0xFFF8FAFC),
     onPageBgMuted:      Color(0xFFCBD5E1),
+    // Eyebrow on page bg → bright sky-300 so the small uppercase tag
+    // pops against the dark scaffold (sky-700 was getting lost).
+    accentOnPageBg:      Color(0xFF7DD3FC),
     // Dark theme — chrome flips to deep slate so the drawer + app bar
     // read as "dark mode" alongside the dark hero. SVG wordmark + all
     // foreground text/icons switch to near-white via `onChrome`.
@@ -717,6 +758,9 @@ class ThemePresets {
     // Dark page-bg → near-white text + soft slate-300 secondary.
     onPageBg:           Color(0xFFF8FAFC),
     onPageBgMuted:      Color(0xFFCBD5E1),
+    // Eyebrow on page bg → bright sky-300 so the small uppercase tag
+    // pops against the dark scaffold (sky-700 was getting lost).
+    accentOnPageBg:      Color(0xFF7DD3FC),
     // Dark theme — chrome flips to deep slate so the drawer + app bar
     // read as "dark mode" alongside the dark hero. SVG wordmark + all
     // foreground text/icons switch to near-white via `onChrome`.

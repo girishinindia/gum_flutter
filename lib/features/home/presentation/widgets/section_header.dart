@@ -57,7 +57,11 @@ class SectionHeader extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(eyebrow, style: AppTypography.eyebrow),
+              Text(
+                eyebrow,
+                style: AppTypography.eyebrow
+                    .copyWith(color: palette.accentOnPageBg),
+              ),
               const SizedBox(height: AppSpacing.eyebrowToTitle),
               Text(
                 title,

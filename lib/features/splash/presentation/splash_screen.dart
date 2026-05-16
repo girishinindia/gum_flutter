@@ -4,7 +4,6 @@
 // feature-first location and re-skinned with the aurora gradient so
 // the brand identity hits before the user even sees the home.
 
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -13,8 +12,12 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../features/theming/theme_controller.dart';
-import '../../home/presentation/home_screen.dart';
 
+/// Splash is now passive — go_router's redirect drives navigation based
+/// on AuthBloc state. Phase A's `AuthAppStarted` event runs in main(),
+/// transitions `AuthStatus.unknown → unauthenticated|authenticated`,
+/// and the router immediately swaps to `/login` or `/home`. We keep
+/// the brand animation playing for visual continuity.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -23,23 +26,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Timer(const Duration(milliseconds: 2200), _goHome);
-  }
-
-  void _goHome() {
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 600),
-      pageBuilder: (_, __, ___) => const HomeScreen(),
-      transitionsBuilder: (_, animation, __, child) {
-        final fade = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
-        return FadeTransition(opacity: fade, child: child);
-      },
-    ));
-  }
 
   @override
   Widget build(BuildContext context) {

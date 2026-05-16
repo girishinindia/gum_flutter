@@ -92,7 +92,11 @@ class CategoriesGrid extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(t.exploreEyebrow, style: AppTypography.eyebrow),
+                    Text(
+                      t.exploreEyebrow,
+                      style: AppTypography.eyebrow
+                          .copyWith(color: palette.accentOnPageBg),
+                    ),
                     const SizedBox(height: AppSpacing.eyebrowToTitle),
                     Text(
                       t.browseCategoriesTitle,

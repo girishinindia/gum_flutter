@@ -104,6 +104,14 @@ class AppPalette {
   /// Faded variant used for secondary copy directly on the page bg.
   final Color onPageBgMuted;
 
+  /// Accent colour for small uppercase tags rendered on the page bg
+  /// (section eyebrows: "EXPLORE", "TOP PICKS", "THIS WEEK"). Light
+  /// themes ship the existing sky-700 — same hue the eyebrow has had
+  /// since launch, so every light palette including Aurora is
+  /// untouched. Dark themes get a brighter sky-300 because deep blue
+  /// gets lost on a slate-900 page bg.
+  final Color accentOnPageBg;
+
   // ── Chrome surfaces (drawer + app bar) ─────────────────────────────
   //
   // The two solid panels of "app shell": the end-drawer's body and
@@ -155,6 +163,7 @@ class AppPalette {
     required this.heroSurfaceBorder,
     required this.onPageBg,
     required this.onPageBgMuted,
+    required this.accentOnPageBg,
     required this.chromeSurface,
     required this.chromeSurfaceMuted,
     required this.chromeOutline,

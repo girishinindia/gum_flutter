@@ -7,16 +7,24 @@
 //   4. FeaturedCard + OffersCarousel — pulled together with one
 //      Transform.translate so they sit tight under the categories.
 //
-// Auth state is tracked locally as `_isLoggedIn` (default true while
-// we don't yet have a real auth gate). When false:
+// Auth state now comes from the AuthBloc — the home is only mounted
+// when AuthStatus.authenticated, so we read the user via
+// `context.watch<AuthBloc>().state.user` and treat its presence as
+// the source of truth. When `user == null` (we reached the home in
+// some edge case before the redirect lands), we degrade gracefully:
 //   • the stats row in the hero is hidden
 //   • the drawer shows a "Sign in" CTA instead of the user header
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../features/auth/bloc/auth_bloc.dart';
+import '../../../features/auth/bloc/auth_event.dart';
+import '../../../features/auth/bloc/auth_state.dart';
 import '../../../features/catalog/categories_controller.dart';
 import '../../../features/i18n/language_controller.dart';
 import '../../../features/theming/theme_controller.dart';
@@ -44,11 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _repo = HomeRepository();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  /// Local demo flag — default signed-out; opt-in via the drawer's
-  /// "Sign in" CTA. Replace with real auth state once the auth layer
-  /// lands.
-  bool _isLoggedIn = false;
-  int  _navIndex   = 0;
+  int _navIndex = 0;
 
   void _openDrawer() => _scaffoldKey.currentState?.openEndDrawer();
 
@@ -64,6 +68,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final t          = lang.t;
     final courses    = _repo.popularCourses();
     final menu       = _repo.drawerMenu(t);
+
+    // Real auth state, sourced from the bloc. Drawer/hero gating below
+    // checks `isLoggedIn` exclusively against this.
+    final authState  = context.watch<AuthBloc>().state;
+    final authUser   = authState.user;
+    final isLoggedIn = authState.status == AuthStatus.authenticated && authUser != null;
+    final firstName  = authUser?.firstName ?? _repo.userFirstName;
+    final lastName   = authUser?.lastName  ?? _repo.userLastName;
+    final initial    = (firstName.isNotEmpty ? firstName[0] : _repo.userInitial).toUpperCase();
+    final email      = authUser?.email ?? '';
 
     // Bottom-nav items — labels come from `t` so they translate too.
     final navItems = <CurvedNavItem>[
@@ -84,17 +98,34 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColors.background,
         extendBody: true,
         endDrawer: AppDrawer(
-          isLoggedIn: _isLoggedIn,
-          firstName: _repo.userFirstName,
-          lastName:  _repo.userLastName,
-          initial:   _repo.userInitial,
-          email:     'manshi.khunt@gmail.com',
+          isLoggedIn: isLoggedIn,
+          firstName:  firstName,
+          lastName:   lastName,
+          initial:    initial,
+          email:      email.isNotEmpty ? email : 'manshi.khunt@gmail.com',
           streakDays: 7,
           items: menu,
           t:     t,
-          onItemTap:  (_) {},
-          onSignOut:  () => setState(() => _isLoggedIn = false),
-          onSignIn:   () => setState(() => _isLoggedIn = true),
+          onItemTap: (m) {
+            // The Profile entry is identified by its icon (label is
+            // localised so matching on string would break under i18n).
+            if (m.icon == Icons.person_rounded) {
+              _scaffoldKey.currentState?.closeEndDrawer();
+              context.push('/profile');
+            }
+          },
+          onSignOut:  () {
+            // AuthBloc handles repo.logout + emits unauthenticated;
+            // go_router's redirect bounces us to /login.
+            context.read<AuthBloc>().add(const AuthLoggedOut());
+          },
+          onSignIn: () {
+            // Close the end-drawer first, then deep-link to /login. A
+            // Drawer isn't on the Navigator stack, so it has to be
+            // closed via the Scaffold state explicitly.
+            _scaffoldKey.currentState?.closeEndDrawer();
+            context.push('/login');
+          },
         ),
         body: Stack(
           children: [
@@ -124,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 //     its own top gap so the rhythm stays uniform.
                 SliverToBoxAdapter(
                   child: HeroBody(
-                    isLoggedIn:        _isLoggedIn,
+                    isLoggedIn:        isLoggedIn,
                     enrolledCount:     _repo.enrolledCount,
                     enrolledDelta:     _repo.enrolledDelta,
                     activeCount:       _repo.activeCount,
