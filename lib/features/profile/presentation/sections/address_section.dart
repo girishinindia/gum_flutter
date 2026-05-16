@@ -425,8 +425,14 @@ class _AddressSectionState extends State<AddressSection> {
   }) {
     final states = country == null ? const <StateRow>[] : (_statesByCountry[country.id] ?? const []);
     final cities = state   == null ? const <CityRow>[]  : (_citiesByState[state.id] ?? const []);
-    final statesLoading = country != null && _statesLoadingFor.contains(country.id);
-    final citiesLoading = state   != null && _citiesLoadingFor.contains(state.id);
+    // Phase 43.8 — only show the inline spinner when the field is EMPTY
+    // and we're still resolving its list. With Phase 43.2 the saved name
+    // hydrates instantly, so spinning next to a populated "Gujarat" /
+    // "Surat" looks like the value is in trouble. The list still loads
+    // in the background — the picker sheet will populate when the user
+    // taps the field.
+    final statesLoading = country != null && state == null && _statesLoadingFor.contains(country.id);
+    final citiesLoading = state   != null && city  == null && _citiesLoadingFor.contains(state.id);
 
     return Column(
       children: [
