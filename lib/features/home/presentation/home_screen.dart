@@ -27,9 +27,13 @@ import '../../../features/auth/bloc/auth_event.dart';
 import '../../../features/auth/bloc/auth_state.dart';
 import '../../../features/catalog/categories_controller.dart';
 import '../../../features/i18n/language_controller.dart';
+import '../../../features/theming/bottom_nav_style_controller.dart';
 import '../../../features/theming/theme_controller.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/curved_bottom_nav.dart';
+import '../../../shared/widgets/flat_pill_bottom_nav.dart';
+import '../../../shared/widgets/lifted_card_bottom_nav.dart';
+import '../../../shared/widgets/notched_active_bottom_nav.dart';
 import '../../../shared/widgets/page_constraint.dart';
 import '../data/home_repository.dart';
 import 'widgets/bundles_section.dart';
@@ -216,24 +220,67 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // Trailing space — reduced because the bottom Column
-                // above is lifted 100 px via Transform, leaving a
-                // matching phantom slot. 20 px gives clearance from
-                // the curved nav + FAB protrusion.
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                // Trailing space — phase 43.13: bumped from 20 → 50 px
+                // so the last review card has a ~30 px breathing gap
+                // between it and the top edge of the curved bottom nav
+                // (was butting right up against the curve on tall
+                // screens where the Transform offset didn't leave
+                // enough phantom slack).
+                const SliverToBoxAdapter(child: SizedBox(height: 50)),
               ],
               ),
             ),
           ],
         ),
-        bottomNavigationBar: CurvedBottomNav(
-          size: size,
-          selectedIndex: _navIndex,
-          onItemTapped: (i) => setState(() => _navIndex = i),
-          onFabTapped: () {},
-          items: navItems,
-        ),
+        // Phase 43.15/43.16 — swap between the four nav silhouettes
+        // based on the persisted user choice. All widgets share the
+        // same public API so this is a single switch; everything else
+        // (the 4 nav items, the basket FAB, the local _navIndex state)
+        // is unchanged.
+        bottomNavigationBar: _buildBottomNav(context, size, navItems),
       ),
     );
+  }
+
+  // Phase 43.16 — single switch that maps the persisted style to its
+  // widget. Each option keeps the same callbacks/items so the home
+  // screen's state plumbing is identical no matter which one renders.
+  Widget _buildBottomNav(BuildContext context, Size size, List<CurvedNavItem> navItems) {
+    final style = context.watch<BottomNavStyleController>().style;
+    final onTap = (int i) => setState(() => _navIndex = i);
+    switch (style) {
+      case BottomNavStyle.flatPill:
+        return FlatPillBottomNav(
+          size: size,
+          selectedIndex: _navIndex,
+          onItemTapped: onTap,
+          onFabTapped: () {},
+          items: navItems,
+        );
+      case BottomNavStyle.notchedActive:
+        return NotchedActiveBottomNav(
+          size: size,
+          selectedIndex: _navIndex,
+          onItemTapped: onTap,
+          onFabTapped: () {},
+          items: navItems,
+        );
+      case BottomNavStyle.liftedCard:
+        return LiftedCardBottomNav(
+          size: size,
+          selectedIndex: _navIndex,
+          onItemTapped: onTap,
+          onFabTapped: () {},
+          items: navItems,
+        );
+      case BottomNavStyle.curved:
+        return CurvedBottomNav(
+          size: size,
+          selectedIndex: _navIndex,
+          onItemTapped: onTap,
+          onFabTapped: () {},
+          items: navItems,
+        );
+    }
   }
 }

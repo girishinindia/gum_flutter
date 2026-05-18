@@ -59,22 +59,44 @@ class CurvedBottomNav extends StatelessWidget {
     // since CustomPainter has no BuildContext of its own.
     final palette = context.watch<ThemeController>().palette;
 
+    // Phase 43.12 — on devices with a gesture pill or 3-button system
+    // nav bar, the bottom of our 86 px nav was getting clipped by the
+    // OS chrome (labels overlapped the Android back/home buttons). Read
+    // the viewPadding.bottom inset and extend the total height by it,
+    // keeping the items pinned to the top 86 px. The gradient painter
+    // already fills the full height of its canvas so the extension
+    // region naturally takes the same tint — it just acts as an opaque
+    // bottom margin sitting behind the system bar.
+    // Phase 43.14 — shrink the item band 86 → 72 pt so the nav doesn't
+    // look top-heavy on devices with no safe-area inset (older phones,
+    // tablets), and labels themselves move to the bottom of the band
+    // (see `_NavItem` Column below). Combined effect: the bottom of
+    // the labels sits a fixed 8 pt above the safe-area boundary on every
+    // device, so the nav reads as visually consistent whether the OS
+    // reserves 0 / 24 / 34 / 48 pt below.
+    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+    const itemBandHeight = 72.0;
+    final totalHeight = itemBandHeight + bottomInset;
+
     return SizedBox(
       width: size.width,
-      height: 86,
+      height: totalHeight,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // ── Curved gradient backdrop ────────────────────────────────
+          // ── Curved gradient backdrop ─ extends to full height so the
+          //    tint continues behind the system gesture bar instead of
+          //    leaving a bare strip below the nav.
           Positioned.fill(
             child: CustomPaint(
-              size: Size(size.width, 86),
+              size: Size(size.width, totalHeight),
               painter: _BNBPainter(gradient: palette.bottomNavGradient),
             ),
           ),
 
           // ── Inner top stroke — sits just inside the curve ───────────
-          Positioned.fill(
+          Positioned(
+            top: 0, left: 0, right: 0, height: itemBandHeight,
             child: IgnorePointer(
               child: CustomPaint(
                 painter: _BNBStrokePainter(),
@@ -89,8 +111,10 @@ class CurvedBottomNav extends StatelessWidget {
             child: _Fab(onTap: onFabTapped),
           ),
 
-          // ── Row of items ────────────────────────────────────────────
-          Positioned.fill(
+          // ── Row of items ─ pinned to the top 86 px so labels never
+          //    fall into the system-nav-bar safe-area at the bottom.
+          Positioned(
+            top: 0, left: 0, right: 0, height: itemBandHeight,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -210,9 +234,13 @@ class _NavItem extends StatelessWidget {
       splashColor:    Colors.white.withValues(alpha: 0.10),
       child: SizedBox(
         width: 64,
-        height: 86,
+        // Phase 43.14 — band shrunk 86 → 72 pt. Children anchored to
+        // the END of the band (instead of center) so labels always sit
+        // a fixed 8 pt above the safe-area boundary regardless of how
+        // big the OS reserves below.
+        height: 72,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Stack(
               clipBehavior: Clip.none,
@@ -275,6 +303,11 @@ class _NavItem extends StatelessWidget {
                     : null,
               ),
             ),
+            // Phase 43.14 — fixed 8 pt gap between the selection dot and
+            // the safe-area boundary. Keeps labels visually consistent
+            // across iPhone (34 pt inset) / Android 3-button (48 pt) /
+            // gesture nav (24 pt) / no-inset devices.
+            const SizedBox(height: 8),
           ],
         ),
       ),

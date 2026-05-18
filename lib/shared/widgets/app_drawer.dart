@@ -18,6 +18,7 @@ import '../../core/theme/app_typography.dart';
 import '../../features/home/domain/models/menu_action.dart';
 import '../../features/i18n/language_controller.dart';
 import '../../features/i18n/messages.dart';
+import '../../features/theming/bottom_nav_style_controller.dart';
 import '../../features/theming/theme_controller.dart';
 import 'language_sheet.dart';
 import 'theme_sheet.dart';
@@ -93,13 +94,16 @@ class AppDrawer extends StatelessWidget {
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 8, vertical: 6),
-                // +2 for the Language + Theme rows appended at the end.
-                // Language sits first (locale is more "global"), Theme
-                // sits second (visual personalisation).
-                itemCount: items.length + 2,
+                // +3 for the Language + Theme + Bottom-nav-style rows
+                // appended at the end. Language sits first (locale is
+                // more "global"), then Theme (color personalisation),
+                // then Bottom-nav style (layout personalisation, Phase
+                // 43.15).
+                itemCount: items.length + 3,
                 itemBuilder: (context, i) {
                   if (i == items.length)     return _LanguageRow(t: t);
                   if (i == items.length + 1) return _ThemeRow(t: t);
+                  if (i == items.length + 2) return const _BottomNavStyleRow();
                   final m = items[i];
                   return _DrawerRow(
                     action: m,
@@ -642,6 +646,434 @@ class _SignInCta extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Bottom-nav style row — Phase 43.15
+//
+// Opens a tiny sheet with two radio tiles (Curved gradient · Flat pill).
+// Mirrors `_ThemeRow`'s shape so the drawer reads as one consistent
+// stack of personalisation rows: Language · Theme · Bottom-nav style.
+// ─────────────────────────────────────────────────────────────────────
+
+class _BottomNavStyleRow extends StatelessWidget {
+  const _BottomNavStyleRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.watch<ThemeController>().palette;
+    final navCtrl = context.watch<BottomNavStyleController>();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: AppRadius.rMd,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          Navigator.pop(context);
+          BottomNavStyleSheet.show(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(
+                  color: palette.primary500.withValues(
+                    alpha: palette.isDark ? 0.20 : 0.10,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.dashboard_customize_rounded,
+                    color: palette.primary500, size: 19),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Bottom nav style',
+                  style: AppTypography.h3.copyWith(
+                    fontSize: 14,
+                    color: palette.onChrome,
+                  ),
+                ),
+              ),
+              Text(
+                navCtrl.style.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.caption.copyWith(
+                  color: palette.onChromeMuted,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right_rounded,
+                  color: palette.onChromeMuted, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// BottomNavStyleSheet — modal bottom sheet that lets the user swap
+// between the two nav silhouettes. Picker mirrors the Theme/Language
+// sheets in shape so it feels at home alongside them.
+// ─────────────────────────────────────────────────────────────────────
+
+class BottomNavStyleSheet {
+  BottomNavStyleSheet._();
+
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _BottomNavStyleSheetBody(),
+    );
+  }
+}
+
+class _BottomNavStyleSheetBody extends StatelessWidget {
+  const _BottomNavStyleSheetBody();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.watch<ThemeController>().palette;
+    final navCtrl = context.watch<BottomNavStyleController>();
+    return Container(
+      decoration: BoxDecoration(
+        color: palette.chromeSurface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Drag handle.
+          Center(
+            child: Container(
+              width: 38, height: 4,
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                color: palette.chromeOutline,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Text(
+            'Bottom navigation style',
+            style: AppTypography.h2.copyWith(
+              fontSize: 17, color: palette.onChrome,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Pick the shape that feels best. Live swap — your change applies right away.',
+            style: AppTypography.body.copyWith(
+              fontSize: 12.5, color: palette.onChromeMuted,
+            ),
+          ),
+          const SizedBox(height: 14),
+          for (final style in BottomNavStyle.values)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _StyleTile(
+                style: style,
+                isActive: navCtrl.style == style,
+                onTap: () async {
+                  HapticFeedback.selectionClick();
+                  await navCtrl.setStyle(style);
+                  if (context.mounted) Navigator.pop(context);
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StyleTile extends StatelessWidget {
+  const _StyleTile({
+    required this.style,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final BottomNavStyle style;
+  final bool           isActive;
+  final VoidCallback   onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.watch<ThemeController>().palette;
+    return Material(
+      color: isActive
+          ? palette.primary500.withValues(alpha: 0.08)
+          : Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isActive
+                  ? palette.primary500
+                  : palette.chromeOutline,
+              width: isActive ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              // Silhouette preview — picks a tiny mockup that matches
+              // the silhouette of the actual nav widget so the chooser
+              // doubles as a visual key.
+              SizedBox(
+                width: 60, height: 38,
+                child: _stylePreview(style, palette),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      style.label,
+                      style: AppTypography.h3.copyWith(
+                        fontSize: 14, color: palette.onChrome,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      style.description,
+                      style: AppTypography.caption.copyWith(
+                        color: palette.onChromeMuted, fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Radio dot.
+              Container(
+                width: 20, height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isActive ? palette.primary500 : palette.chromeOutline,
+                    width: 2,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: isActive
+                    ? Container(
+                        width: 10, height: 10,
+                        decoration: BoxDecoration(
+                          color: palette.primary500, shape: BoxShape.circle,
+                        ),
+                      )
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Per-style silhouette previews — small mockups that mirror each
+// real nav widget's signature shape. Used both in the chooser tiles
+// and (smaller) in the `_BottomNavStyleRow` peek.
+// ─────────────────────────────────────────────────────────────────────
+
+Widget _stylePreview(BottomNavStyle style, palette) {
+  switch (style) {
+    case BottomNavStyle.curved:        return _CurvedSilhouette(palette: palette);
+    case BottomNavStyle.flatPill:      return _FlatPillSilhouette(palette: palette);
+    case BottomNavStyle.notchedActive: return _NotchedSilhouette(palette: palette);
+    case BottomNavStyle.liftedCard:    return _LiftedCardSilhouette(palette: palette);
+  }
+}
+
+class _CurvedSilhouette extends StatelessWidget {
+  const _CurvedSilhouette({required this.palette});
+  final palette;
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        decoration: BoxDecoration(gradient: palette.bottomNavGradient),
+        alignment: Alignment.topCenter,
+        child: Transform.translate(
+          offset: const Offset(0, -8),
+          child: Container(
+            width: 18, height: 18,
+            decoration: BoxDecoration(
+              gradient: palette.brandGradient,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FlatPillSilhouette extends StatelessWidget {
+  const _FlatPillSilhouette({required this.palette});
+  final palette;
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              color: palette.chromeSurface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: palette.chromeOutline, width: 1),
+            ),
+          ),
+        ),
+        Positioned(
+          top: -8, left: 0, right: 0,
+          child: Center(
+            child: Transform.rotate(
+              angle: 0.785398, // 45°
+              child: Container(
+                width: 16, height: 16,
+                decoration: BoxDecoration(
+                  gradient: palette.brandGradient,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: palette.chromeSurface, width: 2),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NotchedSilhouette extends StatelessWidget {
+  const _NotchedSilhouette({required this.palette});
+  final palette;
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Gradient bar with a small visual notch on the left side.
+        Positioned.fill(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Container(decoration: BoxDecoration(gradient: palette.bottomNavGradient)),
+          ),
+        ),
+        // The floating active icon sitting in the dip on the left.
+        Positioned(
+          top: -6, left: 6,
+          child: Container(
+            width: 18, height: 18,
+            decoration: BoxDecoration(
+              color: palette.chromeSurface,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: palette.primary500.withValues(alpha: 0.4),
+                  blurRadius: 6, spreadRadius: -1,
+                ),
+              ],
+            ),
+            child: Icon(Icons.circle, size: 8, color: palette.primary500),
+          ),
+        ),
+        // Central FAB.
+        Positioned(
+          top: -8, left: 0, right: 0,
+          child: Center(
+            child: Container(
+              width: 16, height: 16,
+              decoration: BoxDecoration(
+                gradient: palette.brandGradient,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LiftedCardSilhouette extends StatelessWidget {
+  const _LiftedCardSilhouette({required this.palette});
+  final palette;
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Flat surface bar.
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              color: palette.chromeSurface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: palette.chromeOutline, width: 1),
+            ),
+          ),
+        ),
+        // Lifted card on the left — the active tab raised above the bar.
+        Positioned(
+          top: -8, left: 6,
+          child: Container(
+            width: 18, height: 22,
+            decoration: BoxDecoration(
+              gradient: palette.brandGradient,
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [
+                BoxShadow(
+                  color: palette.primary500.withValues(alpha: 0.45),
+                  blurRadius: 6, spreadRadius: -1,
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Central FAB.
+        Positioned(
+          top: -8, left: 0, right: 0,
+          child: Center(
+            child: Container(
+              width: 16, height: 16,
+              decoration: BoxDecoration(
+                gradient: palette.brandGradient,
+                shape: BoxShape.circle,
+                border: Border.all(color: palette.chromeSurface, width: 2),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

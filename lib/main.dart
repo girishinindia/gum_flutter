@@ -35,6 +35,7 @@ import 'features/auth/bloc/auth_event.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/catalog/categories_controller.dart';
 import 'features/i18n/language_controller.dart';
+import 'features/theming/bottom_nav_style_controller.dart';
 import 'features/theming/theme_controller.dart';
 
 Future<void> main() async {
@@ -48,6 +49,10 @@ Future<void> main() async {
   // ── Legacy (Provider) controllers ─────────────────────────────────
   final languageController   = LanguageController();
   final themeController      = ThemeController();
+  // Phase 43.15 — picks between CurvedBottomNav (default) and the new
+  // FlatPillBottomNav. Persisted to SharedPreferences so the choice
+  // survives app restarts.
+  final bottomNavStyleController = BottomNavStyleController();
   final categoriesController = CategoriesController(
     languageController: languageController,
   );
@@ -60,11 +65,12 @@ Future<void> main() async {
   final router = buildAppRouter(authBloc);
 
   runApp(GrowUpMoreApp(
-    languageController:   languageController,
-    themeController:      themeController,
-    categoriesController: categoriesController,
-    authBloc:             authBloc,
-    router:               router,
+    languageController:        languageController,
+    themeController:           themeController,
+    bottomNavStyleController:  bottomNavStyleController,
+    categoriesController:      categoriesController,
+    authBloc:                  authBloc,
+    router:                    router,
   ));
 
   // Fire-and-forget loads after the first frame is on screen. The UI
@@ -76,6 +82,7 @@ Future<void> main() async {
   // ignore: unawaited_futures
   () async {
     await themeController.load();
+    await bottomNavStyleController.load();
     authBloc.add(const AuthAppStarted());      // non-blocking; bloc handles async
     await languageController.load();
     await categoriesController.load();
@@ -87,16 +94,18 @@ class GrowUpMoreApp extends StatelessWidget {
     super.key,
     required this.languageController,
     required this.themeController,
+    required this.bottomNavStyleController,
     required this.categoriesController,
     required this.authBloc,
     required this.router,
   });
 
-  final LanguageController   languageController;
-  final ThemeController      themeController;
-  final CategoriesController categoriesController;
-  final AuthBloc             authBloc;
-  final GoRouter             router;
+  final LanguageController         languageController;
+  final ThemeController            themeController;
+  final BottomNavStyleController   bottomNavStyleController;
+  final CategoriesController       categoriesController;
+  final AuthBloc                   authBloc;
+  final GoRouter                   router;
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +113,7 @@ class GrowUpMoreApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<LanguageController>.value(value: languageController),
         ChangeNotifierProvider<ThemeController>.value(value: themeController),
+        ChangeNotifierProvider<BottomNavStyleController>.value(value: bottomNavStyleController),
         ChangeNotifierProvider<CategoriesController>.value(value: categoriesController),
       ],
       child: MultiBlocProvider(
