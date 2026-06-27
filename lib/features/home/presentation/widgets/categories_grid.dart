@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/responsive/responsive_value.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -119,7 +120,9 @@ class CategoriesGrid extends StatelessWidget {
           // ever crossing into overlap territory.
           Transform.translate(
             offset: const Offset(0, -20),
-            child: GridView.builder(
+            child: isLoading
+                ? _skeletonGrid(context)
+                : GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: visible.length,
@@ -161,6 +164,77 @@ class CategoriesGrid extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Shimmer skeleton shown while the `/sub-categories` boot fetch is in
+  /// flight — same grid metrics as the real tiles so nothing jumps when the
+  /// data lands. Gives the student an unmistakable "loading…" signal instead
+  /// of a blank gap.
+  Widget _skeletonGrid(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: previewLimit ?? 6,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: R<int>(normal: 3, tabletP: 6, tabletL: 6).resolve(context),
+        mainAxisSpacing: AppSpacing.tileGap,
+        crossAxisSpacing: AppSpacing.tileGap,
+        mainAxisExtent: R<double>(normal: 118, tabletP: 124).resolve(context),
+      ),
+      itemBuilder: (_, __) => const _SkeletonTile(),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Loading skeleton tile — a real white card with shimmering grey shapes.
+// ─────────────────────────────────────────────────────────────────────
+
+class _SkeletonTile extends StatelessWidget {
+  const _SkeletonTile();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget bar(double w, double h) => Container(
+          width: w,
+          height: h,
+          decoration: BoxDecoration(
+            color: AppColors.slate200,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.rLg,
+        boxShadow: AppRadius.cardShadow,
+        border: Border.all(color: AppColors.outlineSoft, width: 1),
+      ),
+      child: Shimmer.fromColors(
+        baseColor: AppColors.slate200,
+        highlightColor: AppColors.slate50,
+        period: const Duration(milliseconds: 1300),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // icon-chip placeholder
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.slate200,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            const SizedBox(height: 10),
+            bar(58, 9),  // title line
+            const SizedBox(height: 6),
+            bar(34, 7),  // subtitle line
+          ],
+        ),
       ),
     );
   }
